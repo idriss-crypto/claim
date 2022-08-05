@@ -1,4 +1,51 @@
+let identifier
+let claimPassword
+let idriss
+let userHash
+let rpcEndpoint
+let polygonChainId
+let loadPaymentMaticContractAddress
+const ENV = 'development'
 
+switch (ENV) {
+    // local hardhat
+    case "local":
+        loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
+        polygonChainId = 1337
+        rpcEndpoint = 'http://localhost:8545'
+        break;
+    //Mumbai
+    case "development":
+        loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
+        rpcEndpoint = 'https://rpc-mumbai.maticvigil.com/'
+        break;
+    //mainnet
+    case "production":
+        loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
+        rpcEndpoint = "https://rpc.ankr.com/polygon"
+        break;
+}
+
+document.addEventListener('DOMContentLoaded', async () => {
+    let params = new URL(document.location).searchParams;
+    identifier = params.get('identifier');
+    claimPassword = params.get('claimPassword')
+    console.log({identifier, claimPassword})
+    idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
+        web3Provider: defaultWeb3.provider,
+        //TODO: remove local hardcodes
+        sendToAnyoneContractAddress: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
+        idrissRegistryContractAddress: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
+        priceOracleContractAddress: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+    })
+    const walletType = {
+        network: 'evm',
+        coin: 'ETH',
+        walletTag: 'Public ETH',
+    }
+    userHash = await idriss.getHashForIdentifier(identifier, walletType, claimPassword)
+    console.log(userHash)
+})
 pubETHTag = "9306eda974cb89b82c0f38ab407f55b6d124159d1fa7779f2e088b2b786573c1"
 
 const regPh = /^(\+\(?\d{1,4}\s?)\)?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/;
@@ -8,14 +55,14 @@ const regT = /^@[a-zA-Z0-9_]{1,15}$/;
 async function loadPaymentMATIC(web3_) {
     return await new web3_.eth.Contract(
         [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"AdminAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"AdminDeleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"delegateHandle","type":"string"},{"indexed":true,"internalType":"address","name":"delegateAddress","type":"address"}],"name":"DelegateAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"delegateHandle","type":"string"},{"indexed":true,"internalType":"address","name":"delegateAddress","type":"address"}],"name":"DelegateDeleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"bytes32","name":"paymentId_hash","type":"bytes32"},{"indexed":true,"internalType":"string","name":"IDrissHash","type":"string"},{"indexed":false,"internalType":"uint256","name":"date","type":"uint256"}],"name":"PaymentDone","type":"event"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"IDrissHashes","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"adminAddress","type":"address"}],"name":"addAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"delegateAddress","type":"address"},{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"addDelegate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"delegateAddress","type":"address"},{"internalType":"string","name":"delegateHandle","type":"string"},{"internalType":"uint256","name":"percentage","type":"uint256"}],"name":"addDelegateException","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"amounts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"delegate","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"adminAddress","type":"address"}],"name":"deleteAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"deleteDelegate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"receiptId","type":"string"},{"internalType":"address","name":"paymAddr","type":"address"}],"name":"hashReceipt","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"bytes32","name":"paymentId_hash","type":"bytes32"},{"internalType":"string","name":"IDrissHash","type":"string"},{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"payNative","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"receipts","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferContractOwnership","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"string","name":"receiptId","type":"string"},{"internalType":"address","name":"paymAddr","type":"address"}],"name":"verifyReceipt","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"withdraw","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"nonpayable","type":"function"}],
-        "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
+        loadPaymentMaticContractAddress
     );
 }
 
 async function loadPaymentMATICTestnet(web3_) {
     return await new web3_.eth.Contract(
         [{"inputs":[],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"AdminAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"AdminDeleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"delegateHandle","type":"string"},{"indexed":true,"internalType":"address","name":"delegateAddress","type":"address"}],"name":"DelegateAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"string","name":"delegateHandle","type":"string"},{"indexed":true,"internalType":"address","name":"delegateAddress","type":"address"}],"name":"DelegateDeleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"payer","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"bytes32","name":"paymentId_hash","type":"bytes32"},{"indexed":true,"internalType":"string","name":"IDrissHash","type":"string"},{"indexed":false,"internalType":"uint256","name":"date","type":"uint256"}],"name":"PaymentDone","type":"event"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"IDrissHashes","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"adminAddress","type":"address"}],"name":"addAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"delegateAddress","type":"address"},{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"addDelegate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"delegateAddress","type":"address"},{"internalType":"string","name":"delegateHandle","type":"string"},{"internalType":"uint256","name":"percentage","type":"uint256"}],"name":"addDelegateException","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"amounts","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"contractOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"delegate","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"adminAddress","type":"address"}],"name":"deleteAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"deleteDelegate","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"receiptId","type":"string"},{"internalType":"address","name":"paymAddr","type":"address"}],"name":"hashReceipt","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"bytes32","name":"paymentId_hash","type":"bytes32"},{"internalType":"string","name":"IDrissHash","type":"string"},{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"payNative","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"name":"receipts","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferContractOwnership","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"string","name":"receiptId","type":"string"},{"internalType":"address","name":"paymAddr","type":"address"}],"name":"verifyReceipt","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"string","name":"delegateHandle","type":"string"}],"name":"withdraw","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"nonpayable","type":"function"}],
-        "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
+        loadPaymentMaticContractAddress
     );
 }
 
@@ -57,7 +104,7 @@ const evmChains = window.evmChains;
 const WalletLink = window.WalletLink;
 
 // set default web3 + provider for frontend checks w/o connecting wallet
-const defaultWeb3 = new Web3(new Web3.providers.HttpProvider("https://rpc.ankr.com/polygon"));
+const defaultWeb3 = new Web3(new Web3.providers.HttpProvider(rpcEndpoint));
 
 // Web3modal instance
 let web3Modal;
@@ -84,15 +131,13 @@ async function loadContract() {
 let contract;
 
 const MATICOptions = {
-  /* Smart Chain mainnet RPC URL */
-  rpcUrl: 'https://rpc-mainnet.maticvigil.com/',
-  chainId: 137 // Smart Chain mainnet chain id
+  rpcUrl: rpcEndpoint,
+  chainId: polygonChainId // Smart Chain mainnet chain id
 }
 
 const MATICOptionsTestnet = {
-  /* Smart Chain mainnet RPC URL */
-  rpcUrl: 'https://rpc-mumbai.maticvigil.com/',
-  chainId: 80001 // Smart Chain mainnet chain id
+  rpcUrl: rpcEndpoint,
+    chainId: polygonChainId
 }
 
 let TallyOpts = {
@@ -247,6 +292,7 @@ async function init(providerInfo) {
     console.log(accounts)
     selectedAccount = accounts[0];
 
+    document.getElementById("identifierInput").value = identifier
     document.getElementById("identifierTemp").style.display = '';
 }
 
@@ -303,7 +349,11 @@ async function validate() {
     // if successful creates link on registry
     checkedPayment = await IdrissCrypto.AuthorizationTestnet.CheckPayment("MATIC", sessionKey);
     console.log("Success")
-    // Now claim call
+    claim()
+}
+
+function claim() {
+    //TODO: implement
 }
 
 function showTwitterVerification(msg_) {
@@ -349,12 +399,13 @@ async function switchtopolygon() {
 
     // check if correct chain is connected
     console.log("Connected to chain ", chainId)
-    if (chainId != 137) {
+    if (chainId != polygonChainId) {
+        const chainIdHex = defaultWeb3.utils.toHex(polygonChainId)
         console.log("Switch to Polygon requested")
         try {
             await provider.request({
             method: 'wallet_switchEthereumChain',
-            params: [{ chainId: '0x89' }],
+            params: [{ chainId: chainIdHex }],
         });
         } catch (switchError) {
         console.log(switchError)
