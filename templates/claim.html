@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <script src="https://cdn.tailwindcss.com"></script>
+        <title>IDriss Claim Assets</title>
+        <link rel="apple-touch-icon" sizes="180x180" href="../static/images/apple-touch-icon.png" />
+        <link rel="shortcut icon" type="image/png" href="../static/images/favicon32.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="../static/images/favicon32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="../static/images/favicon16.png" />
+        <style>
+            ::-webkit-scrollbar {
+                width: 6px;
+                height: 6px;
+            }
+            ::-webkit-scrollbar-track {
+                border-radius: 10px;
+                background: rgba(0, 0, 0, 0.1);
+            }
+            ::-webkit-scrollbar-thumb {
+                border-radius: 10px;
+                background: rgba(0, 0, 0, 0.2);
+            }
+            ::-webkit-scrollbar-thumb:hover {
+                background: rgba(0, 0, 0, 0.4);
+            }
+            ::-webkit-scrollbar-thumb:active {
+                background: rgba(0, 0, 0, 0.9);
+            }
+            #tooltip {
+                visibility: hidden;
+                width: 80px;
+                background-color: black;
+                color: #fff;
+                text-align: center;
+                border-radius: 6px;
+                padding: 5px 0;
+                margin: auto;
+            }
+            body {
+                background-color: #ffffff;
+            }
+        </style>
+    </head>
+    <body>
+
+<script src="https://cdn.jsdelivr.net/npm/fortmatic@latest/dist/fortmatic.js"></script>
+
+        <!-- MAIN CONTENT -->
+        <div id="all" class="min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+            <div id="DivStep1" class="max-w-md w-full space-y-8">
+                <div>
+                    <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">
+                        You Received $10 in ETH
+                    </h2>
+
+                    <p class="mt-2 text-center text-sm text-gray-600">Your total ETH amount to claim is $12<!-- RAFAL - THIS IS ONLY IF THERE ARE PREVIOUS TRANSACTIONS TO THIS PERSON --></p>
+                </div>
+
+                <div class="mt-8 space-y-6" class="text-center">
+                    <div
+                        onclick="goToStep2();"
+                        class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer"
+                    >
+                        Claim
+                    </div>
+                </div>
+                <!-- RAFAL - THIS IS A CASE WHEN THERE ARE MULTIPLE ASSETS TO CLAIM - WE DON'T NEED IT FOR THE MVP
+                <p class="mt-2 text-center text-sm text-gray-600">
+                  We detected other assets to claim. <span onclick="showOtherAssets();" class="cursor-pointer">Show</span>
+               </p>
+
+            <div id="OtherAssets" class="border-t border-gray-200" style="display: none;">
+                <dl>
+                  <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">ETH</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">0.00523</dd>
+                  </div>
+                  <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">MATIC</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">1652.62</dd>
+                  </div>
+                  <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                    <dt class="text-sm font-medium text-gray-500">BAYC</dt>
+                    <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">#5263</dd>
+                  </div>
+                </dl>
+            </div>
+-->
+            </div>
+        </div>
+
+        <!-- THIS DIV APPEARS AFTER CLICKING "CLAIM" -->
+        <div id="DivStep2" style="display: none;" class="min-h-full flex items-center justify-center pb-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-md w-full space-y-8">
+                <div class="flex w-full space-x-5">
+                    <div
+                        onclick="init('fm');"
+                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+                    >
+                        I DON'T HAVE A WALLET <br />
+                        (I WANT TO CREATE ONE)
+                    </div>
+
+                    <div
+                        onclick="init('modal');"
+                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+                    >
+                        I HAVE A WALLET
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="identifierTemp" style="display:none" class="mt-2 sm:mt-0 mb-6 sm:w-60">
+            <p class="text-sm text-gray-500 mb-1">Identifier temp:</p>
+            <input type="text" id="identifierInput" name="" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="123456" autofocus />
+            <div
+                onclick="signUp();"
+                class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+            >
+                Sign Me Up!
+            </div>
+        </div>
+        <div id="validateDiv" style="display:none">
+            <div id="twitterMsg" class="mt-2" style="display: none;">
+                <p class="text-sm text-gray-500 mb-2">
+                    Tweet the following text with <span id="accountName"></span> to verify yourself.
+                </p>
+                <div id="tweet-wrapper">
+                    <div class="border border-gray-300 rounded-md content-center p-1 hover:cursor-pointer" onclick="copyTweet();">
+                        <span class="text-xs" id="tweetContent" ></span>
+                    </div>
+                    <div id="tooltip" class="text-sm">Copied!</div>
+                    <p id="noTweet-error" class="text-red-500 font-medium hidden mb-1">We could not find your tweet. Make sure it is in your most recent activities.</p>
+                    <p id="noTwitter-error" class="text-red-500 font-medium hidden mb-1">Could not find your Twitter name, try again.</p>
+                </div>
+            </div>
+            <div id="OTP" style="display:none" class="mt-2 sm:mt-0 mb-6 sm:w-60">
+                <p class="text-sm text-gray-500 mb-1">Input the code you have received:</p>
+                <input type="text" id="OTPInput" name="" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="123456" autofocus />
+                <p id="otpError" class="text-red-500 font-medium hidden mt-1">Wrong OTP.</p>
+            </div>
+            <div
+                onclick="validate();"
+                class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+            >
+                Continue / I have posted
+            </div>
+        </div>
+
+        <!-- THIS DIV APPEARS AFTER CLICKING "I HAVE A WALLET" -->
+        <div id="DivStep3" style="display: none;" class="min-h-full flex items-center justify-center pb-12 px-4 sm:px-6 lg:px-8">
+            <div class="max-w-md w-full space-y-8">
+                <div class="flex w-full space-x-5">
+                    WEB3 MODAL
+                </div>
+            </div>
+        </div>
+
+        <!-- FOOTER -->
+
+        <div class="relative bg-white inset-x-0 bottom-0 lg:fixed md:fixed">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="items-center border-b-2 border-gray-100 py-6 md:space-x-10">
+                    <!--<div class="flex justify-start lg:w-0 lg:flex-1">
+                  <a href="#">
+                    <span class="sr-only">IDriss</span>
+                    <img class="h-8 w-auto sm:h-10" src="" alt="">
+                  </a>
+                  </div>-->
+                    <nav class="flex space-x-10 justify-center">
+                        <a href="/" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">
+                            Home
+                        </a>
+                        <a href="/docs" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">
+                            Docs
+                        </a>
+                        <a href="https://twitter.com/IDriss_xyz" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">
+                            Twitter
+                        </a>
+                        <a href="https://discord.gg/RJhJKamjw5" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">
+                            Discord
+                        </a>
+                    </nav>
+                    <!--
+                  <div class="hidden md:flex items-center justify-start md:flex-1 lg:w-0">
+                    <a href="https://chrome.google.com/webstore/detail/idriss-crypto/fghhpjoffbgecjikiipbkpdakfmkbmig" class="ml-8 whitespace-nowrap inline-flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-base font-medium text-white bg-[#11dd74] hover:bg-[#11cc74">
+                    Add IDriss to Chrome
+                    </a>
+                  </div>
+                  -->
+                </div>
+            </div>
+        </div>
+
+        <script>
+            function showOtherAssets() {
+                document.getElementById("OtherAssets").style.display = "";
+            }
+
+            function goToStep2() {
+                document.getElementById("DivStep2").style.display = "";
+                document.getElementById("DivStep1").style.display = "none";
+            }
+
+            function goToStep3() {
+                document.getElementById("DivStep3").style.display = "";
+                document.getElementById("DivStep2").style.display = "none";
+            }
+        </script>
+
+
+        <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/buffer@6"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@web3auth/openlogin-adapter@1.1.1/dist/openloginAdapter.umd.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/web3@1.7.3/dist/web3.min.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/evm-chains@0.2.0/dist/umd/index.min.js"></script>
+        <script type="text/javascript" src="https://unpkg.com/@walletconnect/web3-provider@1.7.0/dist/umd/index.min.js"></script>
+        <script type="text/javascript" src="../static/js/web3modal.js"></script>
+        <script type="text/javascript" src="../static/js/walletlink.bundle.js"></script>
+        <script type="text/javascript" src="../static/js/claimJavascript.js"></script>
+        <script src="https://unpkg.com/idriss-crypto/lib/bundle/global.js"></script>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
+    </body>
+</html>
