@@ -294,6 +294,7 @@ async function init(providerInfo) {
 
     document.getElementById("identifierInput").value = identifier
     document.getElementById("identifierTemp").style.display = '';
+    document.getElementById("DivStep2").style.display = 'none';
 }
 
 // should be triggered automatically based on identifier information.
@@ -354,6 +355,7 @@ async function validate() {
 
 function claim() {
     //TODO: implement
+    // Now claim call
 }
 
 function showTwitterVerification(msg_) {
@@ -431,3 +433,29 @@ async function switchtopolygon() {
         }
     }
 }
+
+// to delete an IDriss:
+// await contract.methods.deleteIDriss(hash_).send({ from: selectedAccount, value: 0});
+
+// to send 0 value transaction for cancelling stuck transactin on fortmatic:
+
+//const toAddress = '0xc62d0142c91Df69BcdfC13954a87d6Fe1DdfdEd6';
+//const sendValue = web3.utils.toWei(String(0.35), 'ether');
+
+//web3.eth.getAccounts((error, accounts) => {
+//  if (error) throw error;
+//
+//  // Construct Ether transaction params
+//  const txnParams = {
+//    from: accounts[0],
+//    to: toAddress,
+//    value: sendValue,
+//      gasPrice: web3.utils.toWei('0.00000005', 'ether')
+//  }
+//
+//  // Send Ether transaction with web3
+//  web3.eth.sendTransaction(txnParams, (error, txnHash) => {
+//    if (error) throw error;
+//    console.log(txnHash);
+//  });
+//});
