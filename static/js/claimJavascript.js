@@ -434,6 +434,7 @@ async function switchtopolygon() {
     }
 }
 
+
 // to delete an IDriss:
 // await contract.methods.deleteIDriss(hash_).send({ from: selectedAccount, value: 0});
 
