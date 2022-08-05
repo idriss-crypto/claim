@@ -434,6 +434,7 @@ async function switchtopolygon() {
     }
 }
 
+
 // to delete an IDriss:
 // to delete an IDriss:
 //async function loadContract(web3_) {
