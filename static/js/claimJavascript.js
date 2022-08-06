@@ -6,45 +6,62 @@ let rpcEndpoint
 let polygonChainId
 let loadPaymentMaticContractAddress
 let sendToAnyoneContractAddress
+let idrissRegistryContractAddress
+let priceOracleContractAddress
 let sendToAnyoneContract
-const ENV = 'development'
+const ENV = 'local'
+let paymentsToClaim = []
 
+const walletType = {
+    coin: 'ETH',
+    network: 'evm',
+    walletTag: 'Public ETH'
+}
+
+//TODO: check contract addresses for test and prod
 switch (ENV) {
     // local hardhat
     case "local":
         loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
         polygonChainId = 1337
         rpcEndpoint = 'http://localhost:8545'
-        sendToAnyoneContractAddress = ''
+        sendToAnyoneContractAddress = '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9'
+        idrissRegistryContractAddress = '0xA3307BF348ACC4bEDdd67CCA2f7F0c4349d347Db'
+        priceOracleContractAddress = '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0'
         break;
     //Mumbai
     case "development":
         loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
         rpcEndpoint = 'https://rpc-mumbai.maticvigil.com/'
         sendToAnyoneContractAddress = ''
+        idrissRegistryContractAddress = ''
+        priceOracleContractAddress = ''
         break;
     //mainnet
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
         rpcEndpoint = "https://rpc.ankr.com/polygon"
         sendToAnyoneContractAddress = ''
+        idrissRegistryContractAddress = ''
+        priceOracleContractAddress = ''
         break;
 }
 
 // set default web3 + provider for frontend checks w/o connecting wallet
-const defaultWeb3 = new Web3(new Web3.providers.HttpProvider(rpcEndpoint));
+let defaultWeb3
 
 document.addEventListener('DOMContentLoaded', async () => {
+    let provider = new Web3.providers.HttpProvider(rpcEndpoint)
+    defaultWeb3 = new Web3(provider)
     let params = new URL(document.location).searchParams;
     identifier = params.get('identifier');
     claimPassword = params.get('claimPassword')
     console.log({identifier, claimPassword})
     idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
-        web3Provider: defaultWeb3.provider,
-        //TODO: remove local hardcodes
-        sendToAnyoneContractAddress: '0xDc64a140Aa3E981100a9becA4E685f962f0cF6C9',
-        idrissRegistryContractAddress: '0xCf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9',
-        priceOracleContractAddress: '0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0',
+        web3Provider: provider,
+        sendToAnyoneContractAddress,
+        idrissRegistryContractAddress,
+        priceOracleContractAddress,
     })
     const walletType = {
         network: 'evm',
@@ -56,22 +73,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     } else {
         window.web3 = defaultWeb3
     }
-    const account = await web3.eth.requestAccounts();
-    //Get the current MetaMask selected/active wallet
-    const walletAddress = account.givenProvider.selectedAddress;
-    console.log(`Wallet: ${walletAddress}`);
 
-    userHash = await idriss.getHashForIdentifier(identifier, walletType, claimPassword)
-    console.log(userHash)
-    sendToAnyoneContract = await loadSendToAnyoneContract(window.web3)
-    const events = sendToAnyoneContract.getPastEvents('AssetTransferred',{
-        filter: {toHash: userHash},
-        fromBlock: 'earliest',
-        toBlock: 'latest'
-    })
+    if (identifier && claimPassword) {
+        userHash = await idriss.getHashForIdentifier(identifier, walletType, claimPassword)
+        console.log(`userhash = ${userHash}`)
+        let userHashForClaim = await idriss.getUserHash(walletType, identifier)
+        console.log(`userhashForClaim = ${userHashForClaim}`)
+        sendToAnyoneContract = await loadSendToAnyoneContract(window.web3)
+        const events = await sendToAnyoneContract.getPastEvents('AssetTransferred',{
+            filter: {toHash: userHash},
+            fromBlock: 'earliest',
+            toBlock: 'latest'
+        })
 
-    console.log(events)
-    // sendToAnyoneAbi
+        for (let i = 0; i < events.length; i++) {
+            // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
+            paymentsToClaim.push({
+                amount: events[i].returnValues.amount,
+                assetContractAddress: events[i].returnValues.assetContractAddress,
+                from: events[i].returnValues.from,
+                toHash: events[i].returnValues.toHash
+            })
+        }
+
+        console.log(events)
+        console.log(paymentsToClaim)
+    }
 })
 pubETHTag = "9306eda974cb89b82c0f38ab407f55b6d124159d1fa7779f2e088b2b786573c1"
 
@@ -355,6 +382,7 @@ async function signUp() {
 
 // check if posted/OTP correct
 async function validate() {
+    /*
     console.log("validate called")
     let valid;
     // call validateOTP only once?
@@ -380,13 +408,38 @@ async function validate() {
     }
     // if successful creates link on registry
     checkedPayment = await IdrissCrypto.AuthorizationTestnet.CheckPayment("MATIC", sessionKey);
+     */
     console.log("Success")
-    claim()
+    //TODO: add support for tokens and nfts
+    claim(paymentsToClaim[0].amount, 0, paymentsToClaim[0].assetContractAddress)
 }
 
-function claim() {
-    //TODO: implement
-    // Now claim call
+async function claim(amount, assetType, assetContractAddress, assetId = 0) {
+    //init again to get new connected provider
+    idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
+        web3Provider: web3.currentProvider,
+        sendToAnyoneContractAddress,
+        idrissRegistryContractAddress,
+        priceOracleContractAddress,
+    })
+    const asset = {
+        amount,
+        type: assetType,
+        assetContractAddress,
+        // assetId
+    }
+    console.log("inside claim")
+    console.log({userHash, identifier, walletType, asset})
+    //TODO: start waiting animation
+    let result
+    await idriss.claim(identifier, claimPassword, walletType, asset)
+        .then((res) => {
+            result = res
+        }).catch((e) => {
+            console.log(e)
+        })
+    //TODO: end waiting animation
+    console.log(result)
 }
 
 function showTwitterVerification(msg_) {
@@ -432,8 +485,8 @@ async function switchtopolygon() {
 
     // check if correct chain is connected
     console.log("Connected to chain ", chainId)
+    const chainIdHex = defaultWeb3.utils.toHex(polygonChainId)
     if (chainId != polygonChainId) {
-        const chainIdHex = defaultWeb3.utils.toHex(polygonChainId)
         console.log("Switch to Polygon requested")
         try {
             await provider.request({
@@ -450,7 +503,7 @@ async function switchtopolygon() {
                 try {
                     await provider.request({
                     method: 'wallet_addEthereumChain',
-                    params: [{ chainId: '0x89', chainName: 'Matic', rpcUrls: ['https://polygon-rpc.com/'], nativeCurrency: {name: 'MATIC', symbol: 'MATIC', decimals: 18}}],
+                    params: [{ chainId: chainIdHex, chainName: 'Matic', rpcUrls: [rpcEndpoint], nativeCurrency: {name: 'MATIC', symbol: 'MATIC', decimals: 18}}],
                     });
                 } catch (addError) {
 
