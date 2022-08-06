@@ -294,6 +294,7 @@ async function init(providerInfo) {
 
     document.getElementById("identifierInput").value = identifier
     document.getElementById("identifierTemp").style.display = '';
+    document.getElementById("DivStep3").style.display = '';
     document.getElementById("DivStep2").style.display = 'none';
 }
 
