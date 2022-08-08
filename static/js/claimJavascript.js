@@ -2,6 +2,7 @@ let identifier
 let claimPassword
 let idriss
 let userHash
+let userHashForClaim
 let rpcEndpoint
 let polygonChainId
 let loadPaymentMaticContractAddress
@@ -42,7 +43,7 @@ switch (ENV) {
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
         polygonChainId = 137
-        rpcEndpoint = "https://rpc-mumbai.maticvigil.com/"
+        rpcEndpoint = "https://rpc-mainnet.maticvigil.com/"
         sendToAnyoneContractAddress = '0xB1f313dbA7c470fF351e19625dcDCC442d3243C4'
         idrissRegistryContractAddress = '0x2eccb53ca2d4ef91a79213fddf3f8c2332c2a814'
         priceOracleContractAddress = '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0'
@@ -79,7 +80,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (identifier && claimPassword) {
         userHash = await idriss.getHashForIdentifier(identifier, walletType, claimPassword)
         console.log(`userhash = ${userHash}`)
-        let userHashForClaim = await idriss.getUserHash(walletType, identifier)
+        userHashForClaim = await idriss.getUserHash(walletType, identifier)
         console.log(`userhashForClaim = ${userHashForClaim}`)
         sendToAnyoneContract = await loadSendToAnyoneContract(window.web3)
         const currentBlockNumber = await window.web3.eth.getBlockNumber()
@@ -213,7 +214,7 @@ let contract;
 
 const MATICOptions = {
   rpcUrl: rpcEndpoint,
-  chainId: polygonChainId // Smart Chain mainnet chain id
+  chainId: polygonChainId
 }
 
 const MATICOptionsTestnet = {
@@ -405,20 +406,33 @@ async function init(providerInfo) {
 async function signUp() {
     // identifier based on param in url
     identifierInput = identifier;
-    const result = await IdrissCrypto.Authorization.CreateOTP("Public ETH", identifierInput, selectedAccount)
-    console.log(result.sessionKey)
+    contractRegistry = await idriss.idrissRegistryContractPromise
+    let res;
+    try {
+    console.log(userHashForClaim)
+        res = await contractRegistry.methods.getIDriss(userHashForClaim).call()
+        console.log(res)
+    } catch {
+        console.log("User does not exist")
+    }
+    if (!res) {
+        const result = await IdrissCrypto.Authorization.CreateOTP("Public ETH", identifierInput, selectedAccount)
+        console.log(result.sessionKey)
 
-    idHash = result.hash
-    sessionKey = result.sessionKey
-    document.getElementById("validateDiv").style.display = "";
+        idHash = result.hash
+        sessionKey = result.sessionKey
+        document.getElementById("validateDiv").style.display = "";
 
-    if (identifierInput.match(regT)) {
-        twitterId = result.twitterId
-        document.getElementById("accountName").innerHTML = identifier;
-        showTwitterVerification(result.twitterMsg)
-        console.log(result.twitterMsg)
+        if (identifierInput.match(regT)) {
+            twitterId = result.twitterId
+            document.getElementById("accountName").innerHTML = identifier;
+            showTwitterVerification(result.twitterMsg)
+            console.log(result.twitterMsg)
+        } else {
+            document.getElementById("OTP").style.display = "";
+        }
     } else {
-        document.getElementById("OTP").style.display = "";
+        claim(paymentsToClaim[0].amount, 0, paymentsToClaim[0].assetContractAddress)
     }
 }
 
@@ -455,7 +469,7 @@ async function validate() {
     checkedPayment = await IdrissCrypto.Authorization.CheckPayment("MATIC", sessionKey);
     console.log("Success")
     //TODO: add support for tokens and nfts
-    claim(paymentsToClaim[0].amount, 0, paymentsToClaim[0].assetContractAddress)
+    await claim(paymentsToClaim[0].amount, 0, paymentsToClaim[0].assetContractAddress)
 }
 
 async function claim(amount, assetType, assetContractAddress, assetId = 0) {
@@ -473,10 +487,14 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
         // assetId
     }
     console.log("inside claim")
-    console.log({userHash, identifier, walletType, asset})
+
+    await fetch('https://gasstation-mainnet.matic.network/v2')
+        .then(response => response.json())
+        .then(json => gas = String(Math.round(json['fast']['maxFee']*1000000000)))
+    console.log({userHash, identifier, walletType, asset, gas})
     //TODO: start waiting animation
     let result
-    await idriss.claim(identifier, claimPassword, walletType, asset)
+    await idriss.claim(identifier, claimPassword, walletType, asset, {gasPrice: gas })
         .then((res) => {
             result = res
         }).catch((e) => {
