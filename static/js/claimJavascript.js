@@ -9,7 +9,7 @@ let sendToAnyoneContractAddress
 let idrissRegistryContractAddress
 let priceOracleContractAddress
 let sendToAnyoneContract
-const ENV = 'development'
+const ENV = 'production'
 let paymentsToClaim = []
 
 const walletType = {
@@ -42,7 +42,7 @@ switch (ENV) {
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
         polygonChainId = 137
-        rpcEndpoint = "https://rpc.ankr.com/polygon"
+        rpcEndpoint = "https://rpc-mumbai.maticvigil.com/"
         sendToAnyoneContractAddress = '0xB1f313dbA7c470fF351e19625dcDCC442d3243C4'
         idrissRegistryContractAddress = '0x2eccb53ca2d4ef91a79213fddf3f8c2332c2a814'
         priceOracleContractAddress = '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0'
@@ -185,6 +185,7 @@ const Web3Modal = window.Web3Modal.default;
 const WalletConnectProvider = window.WalletConnectProvider.default;
 const evmChains = window.evmChains;
 const WalletLink = window.WalletLink;
+const Fortmatic = window.Fortmatic;
 
 // Web3modal instance
 let web3Modal;
@@ -325,9 +326,25 @@ let WalletLinkOpts = {
     },
 };
 
+let customNetworkOptions = {
+    rpcUrl: rpcEndpoint,
+    chainId: 137
+}
+
+let providerOptionsFM = {
+  fortmatic: {
+    package: Fortmatic, // required
+    options: {
+      key: "pk_live_05E291BB168EC551", // required
+      network: customNetworkOptions // if we don't pass it, it will default to localhost:8454
+    }
+  }
+};
+
 const providerOptions = {
     ...WalletConnectOpts,
-    ...WalletLinkOpts
+    ...WalletLinkOpts,
+    ...providerOptionsFM
 }
 
 if (deviceType() === "desktop") {
@@ -338,10 +355,10 @@ if (deviceType() === "desktop") {
 async function init(providerInfo) {
     console.log(providerInfo)
     if (providerInfo == "fm") {
-        // Setting network to polygon testnet
         // key for mainnet:
         // pk_live_05E291BB168EC551
-        fm = new Fortmatic('pk_test_589EBE0E7D8CB015', MATICOptionsTestnet);
+        // pk_test_589EBE0E7D8CB015
+        fm = new Fortmatic('pk_live_05E291BB168EC551', MATICOptions);
         web3 = new Web3(fm.getProvider());
         // let people sign in or up
         await web3.currentProvider.enable();
@@ -372,10 +389,11 @@ async function init(providerInfo) {
     console.log(accounts)
     selectedAccount = accounts[0];
 
-    document.getElementById("identifierInput").value = identifier
+    document.getElementById("identifierInput").innerHTML = identifier;
     document.getElementById("identifierTemp").style.display = '';
     document.getElementById("DivStep3").style.display = '';
     document.getElementById("DivStep2").style.display = 'none';
+    await signUp();
 }
 
 // should be triggered automatically based on identifier information.
@@ -386,8 +404,8 @@ async function init(providerInfo) {
 // or call contract directly with specific IDrissHash
 async function signUp() {
     // identifier based on param in url
-    identifierInput = document.getElementById("identifierInput").value;
-    const result = await IdrissCrypto.AuthorizationTestnet.CreateOTP("Public ETH", identifierInput, selectedAccount)
+    identifierInput = identifier;
+    const result = await IdrissCrypto.Authorization.CreateOTP("Public ETH", identifierInput, selectedAccount)
     console.log(result.sessionKey)
 
     idHash = result.hash
@@ -396,6 +414,7 @@ async function signUp() {
 
     if (identifierInput.match(regT)) {
         twitterId = result.twitterId
+        document.getElementById("accountName").innerHTML = identifier;
         showTwitterVerification(result.twitterMsg)
         console.log(result.twitterMsg)
     } else {
@@ -409,11 +428,15 @@ async function validate() {
     let valid;
     // call validateOTP only once?
     if (document.getElementById("OTPInput").value) {
-        valid = await IdrissCrypto.AuthorizationTestnet.ValidateOTP(document.getElementById("OTPInput").value, sessionKey);
+        try {
+            valid = await IdrissCrypto.Authorization.ValidateOTP(document.getElementById("OTPInput").value, sessionKey);
+        } catch {
+            document.getElementById("noTwitter-error").style.display = "block";
+        }
     } else {
-        valid = await IdrissCrypto.AuthorizationTestnet.ValidateOTP("0", sessionKey);
+        valid = await IdrissCrypto.Authorization.ValidateOTP("0", sessionKey);
     }
-    paymentContract = await loadPaymentMATICTestnet(web3);
+    paymentContract = await loadPaymentMATIC(web3);
     // valid.receiptID should be string already
     // create receiptID for verification
     console.log(String(valid.receiptID))
@@ -429,7 +452,7 @@ async function validate() {
         paid = true
     }
     // if successful creates link on registry
-    checkedPayment = await IdrissCrypto.AuthorizationTestnet.CheckPayment("MATIC", sessionKey);
+    checkedPayment = await IdrissCrypto.Authorization.CheckPayment("MATIC", sessionKey);
     console.log("Success")
     //TODO: add support for tokens and nfts
     claim(paymentsToClaim[0].amount, 0, paymentsToClaim[0].assetContractAddress)
