@@ -9,7 +9,7 @@ let sendToAnyoneContractAddress
 let idrissRegistryContractAddress
 let priceOracleContractAddress
 let sendToAnyoneContract
-const ENV = 'local'
+const ENV = 'development'
 let paymentsToClaim = []
 
 const walletType = {
@@ -32,6 +32,7 @@ switch (ENV) {
     //Mumbai
     case "development":
         loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
+        polygonChainId = 80001
         rpcEndpoint = 'https://rpc-mumbai.maticvigil.com/'
         sendToAnyoneContractAddress = '0x0aD54889d059A8Df56A7b6eD8505834632889E97'
         idrissRegistryContractAddress = '0x6489A077e9D1382E87a493985C531bee2d484640'
@@ -40,6 +41,7 @@ switch (ENV) {
     //mainnet
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
+        polygonChainId = 137
         rpcEndpoint = "https://rpc.ankr.com/polygon"
         sendToAnyoneContractAddress = '0xB1f313dbA7c470fF351e19625dcDCC442d3243C4'
         idrissRegistryContractAddress = '0x2eccb53ca2d4ef91a79213fddf3f8c2332c2a814'
@@ -80,11 +82,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         let userHashForClaim = await idriss.getUserHash(walletType, identifier)
         console.log(`userhashForClaim = ${userHashForClaim}`)
         sendToAnyoneContract = await loadSendToAnyoneContract(window.web3)
-        const events = await sendToAnyoneContract.getPastEvents('AssetTransferred',{
-            filter: {toHash: userHash},
-            fromBlock: 'earliest',
-            toBlock: 'latest'
-        })
+        const currentBlockNumber = await window.web3.eth.getBlockNumber()
+        const promises = []
+        const events = []
+        for (let i = currentBlockNumber; i > currentBlockNumber - 20000; i -= 1000) {
+            const fromBlock = i - 1000
+            const toBlock = i
+            promises.push(
+                sendToAnyoneContract.getPastEvents('AssetTransferred',{
+                filter: {toHash: userHash},
+                fromBlock: `${fromBlock}`,
+                toBlock: `${toBlock}`
+            }).then(e => {
+                if (e.length > 0) {
+                    for (const eKey of e) {
+                        events.push(eKey)
+                    }
+                }
+                })
+            )
+        }
+        await Promise.all(promises)
+        // const events = await sendToAnyoneContract.getPastEvents('AssetTransferred',{
+        //     filter: {toHash: userHash},
+        //     fromBlock: 'earliest',
+        //     toBlock: 'latest'
+        // })
 
         for (let i = 0; i < events.length; i++) {
             // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
@@ -382,7 +405,6 @@ async function signUp() {
 
 // check if posted/OTP correct
 async function validate() {
-    /*
     console.log("validate called")
     let valid;
     // call validateOTP only once?
@@ -408,7 +430,6 @@ async function validate() {
     }
     // if successful creates link on registry
     checkedPayment = await IdrissCrypto.AuthorizationTestnet.CheckPayment("MATIC", sessionKey);
-     */
     console.log("Success")
     //TODO: add support for tokens and nfts
     claim(paymentsToClaim[0].amount, 0, paymentsToClaim[0].assetContractAddress)
