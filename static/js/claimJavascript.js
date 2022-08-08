@@ -33,17 +33,17 @@ switch (ENV) {
     case "development":
         loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
         rpcEndpoint = 'https://rpc-mumbai.maticvigil.com/'
-        sendToAnyoneContractAddress = ''
-        idrissRegistryContractAddress = ''
-        priceOracleContractAddress = ''
+        sendToAnyoneContractAddress = '0x0aD54889d059A8Df56A7b6eD8505834632889E97'
+        idrissRegistryContractAddress = '0x6489A077e9D1382E87a493985C531bee2d484640'
+        priceOracleContractAddress = '0xd0D5e3DB44DE05E9F294BB0a3bEEaF030DE24Ada'
         break;
     //mainnet
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
         rpcEndpoint = "https://rpc.ankr.com/polygon"
-        sendToAnyoneContractAddress = ''
-        idrissRegistryContractAddress = ''
-        priceOracleContractAddress = ''
+        sendToAnyoneContractAddress = '0xB1f313dbA7c470fF351e19625dcDCC442d3243C4'
+        idrissRegistryContractAddress = '0x2eccb53ca2d4ef91a79213fddf3f8c2332c2a814'
+        priceOracleContractAddress = '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0'
         break;
 }
 
