@@ -659,6 +659,9 @@ function hideNFTPath() {
 }
 
 // ToDo: add asset information
+// for nft:
+// document.getElementById("openseaLink").onclick = 'window.open('https://opensea.io/assets/ethereum/<assetContractAddress>/<assetID>')
+// document.getElementById("looksRareLink").onclick = 'window.open('https://looksrare.org/collections/<assetContractAddress>/<assetID>')
 function triggerSuccess() {
     document.getElementById("zerion").href = "https://app.zerion.io/"+selectedAccount+"/overview"
     document.getElementById("DivStep4").style.display = "";
