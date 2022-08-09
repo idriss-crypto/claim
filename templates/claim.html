@@ -44,124 +44,135 @@
         </style>
     </head>
     <body>
+        <script src="https://cdn.jsdelivr.net/npm/fortmatic@latest/dist/fortmatic.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/fortmatic@latest/dist/fortmatic.js"></script>
-
-<!-- DUMMY NAVIGATION -->
-<div class="flex space-x-1">
-    <div id="ButtonTokenNFT" onclick="toggleTokenFlow();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle token flow</div>
-    <div onclick="goToStep4();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle success page (NFT)</div>
-</div>
+        <!-- DUMMY NAVIGATION -->
+        <div class="flex space-x-1">
+            <div id="ButtonTokenNFT" onclick="toggleTokenFlow();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle token flow</div>
+            <div onclick="goToStep4();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle success page (NFT)</div>
+        </div>
 
         <!-- MAIN CONTENT -->
         <div id="all" class="bg-white min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
-
             <!-- STEP 1 -->
             <div id="DivStep1" class="max-w-md w-full">
-
                 <!-- IF TOKEN -->
-                <div id="DivClaimToken" style="display:none">
+                <div id="DivClaimToken" style="display: none;">
                     <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                     <h2 id="welcomeMessage" class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Received $50 in ETH</h2>
                     <h3 id="tipMessage" class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span class="italic">Enjoy your crypto adventure Dad! Tim.</span></h3>
 
                     <!-- CLAIM BUTTON -->
-                    <div class="mt-2 space-y-6 text-center" style="display:">
-                        <div onclick="goToStep2();" class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer">Claim</div>
+                    <div class="mt-2 space-y-6 text-center" style="display: ;">
+                        <div
+                            onclick="goToStep2();"
+                            class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer"
+                        >
+                            Claim
+                        </div>
                     </div>
 
                     <!-- MORE OF THE SAME TOKEN TO CLAIM
                     <p class="mt-2 text-center text-sm text-gray-600">Your total ETH amount to claim is $12</p>-->
 
                     <!-- MULTIPLE DIFFERENT TOKENS & NFTs TO CLAIM -->
-                        <p style="display:none" class="mt-2 text-center text-sm text-gray-600">Other assets to claim. <span id="ButtonOtherAssets" onclick="showOtherAssets();" class="cursor-pointer underline">Show</span></p>
+                    <p style="display: none;" class="mt-2 text-center text-sm text-gray-600">Other assets to claim. <span id="ButtonOtherAssets" onclick="showOtherAssets();" class="cursor-pointer underline">Show</span></p>
 
-                        <div id="OtherAssets" class="w-64 mt-4 border-t border-gray-200 m-auto" style="display: none;">
-                            <dl>
-                              <div class="bg-gray-50 px-4 py-5 grid grid-cols-2 gap-3 justify-items-center">
+                    <div id="OtherAssets" class="w-64 mt-4 border-t border-gray-200 m-auto" style="display: none;">
+                        <dl>
+                            <div class="bg-gray-50 px-4 py-5 grid grid-cols-2 gap-3 justify-items-center">
                                 <dt class="text-sm font-medium text-gray-500">ETH</dt>
                                 <dd class="text-sm text-gray-900 mt-0">0.00523</dd>
-                              </div>
-                              <div class="bg-white px-4 py-5 grid grid-cols-2 gap-3 justify-items-center">
+                            </div>
+                            <div class="bg-white px-4 py-5 grid grid-cols-2 gap-3 justify-items-center">
                                 <dt class="text-sm font-medium text-gray-500">MATIC</dt>
                                 <dd class="text-sm text-gray-900 mt-0">1652.62</dd>
-                              </div>
-                              <div class="bg-gray-50 px-4 py-5 grid grid-cols-2 gap-3 justify-items-center">
+                            </div>
+                            <div class="bg-gray-50 px-4 py-5 grid grid-cols-2 gap-3 justify-items-center">
                                 <dt class="text-sm font-medium text-gray-500">BAYC</dt>
                                 <dd class="text-sm text-gray-900 mt-0">#5263</dd>
-                              </div>
-                            </dl>
-
-                            <div class="mt-2 space-y-6 text-center" style="display:none">
-                                <div onclick="####;" class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer">Claim All</div>
                             </div>
+                        </dl>
 
+                        <div class="mt-2 space-y-6 text-center" style="display: none;">
+                            <div
+                                onclick="####;"
+                                class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer"
+                            >
+                                Claim All
+                            </div>
                         </div>
-
-
+                    </div>
                 </div>
 
-
                 <!-- IF NFT -->
-                <div id="DivClaimNFT" style="display:">
-
+                <div id="DivClaimNFT" style="display: ;">
                     <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                     <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Received an NFT</h2>
                     <h3 class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span class="italic">Happy 50-th birthday Mom! Lily.</span></h3>
-                      <div class="max-w-2xl mx-auto py-16 px-4 sm:py-2 sm:px-6 lg:max-w-7xl lg:px-8">
-
-                            <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                                <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover">
+                    <div class="max-w-2xl mx-auto py-16 px-4 sm:py-2 sm:px-6 lg:max-w-7xl lg:px-8">
+                        <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+                            <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
+                        </div>
+                        <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
+                                <img
+                                    class="inline-block h-6 w-6 rounded-full"
+                                    onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')"
+                                    src="../static/images/opensea.svg"
+                                    alt=""
+                                />
+                                <img
+                                    class="inline-block h-6 w-6 rounded-full"
+                                    onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')"
+                                    src="../static/images/looksrare.svg"
+                                    alt=""
+                                />
                             </div>
-                            <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
-                            <div class="flex items-center justify-between">
-                                <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
-                                    <img class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')" src="../static/images/opensea.svg" alt="">
-                                    <img class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')" src="../static/images/looksrare.svg" alt="">
-                                </div>
-                                <button onclick="goToStep2();" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Claim</button>
-                            </div>
-
-                      </div>
-
+                            <button onclick="goToStep2();" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Claim</button>
+                        </div>
+                    </div>
                 </div>
-
-
             </div>
-
 
             <!-- STEP 2 -->
             <div id="DivStep2" style="display: none;" class="max-w-md w-full space-y-8">
-
                 <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Are You New to Crypto?</h2>
 
-                    <div class="flex w-full space-x-5">
-                        <div onclick="init('fm');" class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase text-center hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer">Yes, I'd liket to set up a new wallet</div>
-                        <div onclick="init('modal');" class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase text-center hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer">No, I already have a wallet</div>
+                <div class="flex w-full space-x-5">
+                    <div
+                        onclick="init('fm');"
+                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase text-center hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+                    >
+                        Yes, I'd liket to set up a new wallet
                     </div>
-
+                    <div
+                        onclick="init('modal');"
+                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase text-center hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+                    >
+                        No, I already have a wallet
+                    </div>
+                </div>
             </div>
-
 
             <!-- STEP 3 -->
             <div id="DivStep3" style="display: none;" class="max-w-md w-full space-y-8">
-
                 <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Verify Your Identifier</h2>
 
-
-                <div id="identifierTemp" style="display:none" class="mt-2 sm:mt-0 mb-6 sm:w-60 m-auto">
+                <div id="identifierTemp" style="display: none;" class="mt-2 sm:mt-0 mb-6 sm:w-60 m-auto">
                     <p class="text-sm text-gray-500 mb-1">Identifier:</p>
-                    <div id="identifierInput" name="" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" />
+                    <div id="identifierInput" name="" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></div>
                 </div>
-                <br>
-                <div id="validateDiv" style="display:none" class="m-auto">
+                <br />
+                <div id="validateDiv" style="display: none;" class="m-auto">
                     <div id="twitterMsg" class="mt-2" style="display: none;">
                         <p class="text-sm text-gray-500 mb-2">Tweet the following text with <span id="accountName"></span> to verify yourself.</p>
                         <div id="tweet-wrapper">
                             <div class="border border-gray-300 rounded-md content-center p-1 hover:cursor-pointer" onclick="copyTweet();">
-                                <span class="text-xs" id="tweetContent" ></span>
+                                <span class="text-xs" id="tweetContent"></span>
                             </div>
                             <div id="tooltip" class="text-sm">Copied!</div>
                             <p id="noTweet-error" class="text-red-500 font-medium hidden mb-1">We could not find your tweet. Make sure it is in your most recent activities.</p>
@@ -169,71 +180,73 @@
                         </div>
                     </div>
 
-                    <div id="OTP" style="display:none" class="mt-2 sm:mt-0 mb-6 sm:w-60 m-auto">
+                    <div id="OTP" style="display: none;" class="mt-2 sm:mt-0 mb-6 sm:w-60 m-auto">
                         <p class="text-sm text-gray-500 mb-1">Input the code you have received:</p>
                         <input type="text" id="OTPInput" name="" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline" placeholder="123456" autofocus />
                         <p id="otpError" class="text-red-500 font-medium hidden mt-1">Wrong OTP.</p>
                     </div>
 
-                    <div onclick="validate();" class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer">Continue / I have posted</div>
+                    <div
+                        onclick="validate();"
+                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
+                    >
+                        Continue / I have posted
+                    </div>
                 </div>
-
-
             </div>
-
 
             <!-- STEP 4 -->
-                <div id="DivStep4" style="display: none;" class="max-w-md w-full">
-                    <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
-
-                    <div class="max-w-2xl mx-auto py-16 px-4 sm:py-8 sm:px-6 lg:max-w-7xl lg:px-8">
-
-                            <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                                <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover">
-                            </div>
-                            <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
-                            <div class="flex items-center justify-between">
-                                <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
-                                    <img class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')" src="../static/images/opensea.svg" alt="">
-                                    <img class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')" src="../static/images/looksrare.svg" alt="">
-                                </div>
-                                <button onclick="goToStep2();" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Share on Twitter</button>
-                            </div>
-
+            <div id="DivStep4" style="display: none;" class="max-w-md w-full">
+                <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
+                <h3 class="mt-4 text-sm text-gray-700"> Check your wallet on <a id="zerion" href="/">Zerion</a></h3>
+                <div id="NFTClaimed" style="display: none" class="max-w-2xl mx-auto py-16 px-4 sm:py-8 sm:px-6 lg:max-w-7xl lg:px-8">
+                    <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+                        <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
                     </div>
-
-                </div>
-
-
-        </div>
-
-            <!-- FOOTER -->
-
-            <div class="relative bg-white inset-x-0 bottom-0 lg:fixed md:fixed">
-                <div class="max-w-7xl mx-auto px-4 sm:px-6">
-                    <div class="items-center border-b-2 border-gray-100 py-6 md:space-x-10">
-                        <nav class="flex space-x-10 justify-center">
-                            <a href="/" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Home</a>
-                            <a href="/docs" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
-                            <a href="https://twitter.com/IDriss_xyz" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Twitter</a>
-                            <a href="https://discord.gg/RJhJKamjw5" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Discord</a>
-                        </nav>
+                    <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
+                    <div class="flex items-center justify-between">
+                        <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
+                            <img class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')" src="../static/images/opensea.svg" alt="" />
+                            <img
+                                class="inline-block h-6 w-6 rounded-full"
+                                onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')"
+                                src="../static/images/looksrare.svg"
+                                alt=""
+                            />
+                        </div>
+                        <button onclick="goToStep2();" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Share on Twitter</button>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- FOOTER -->
+
+        <div class="relative bg-white inset-x-0 bottom-0 lg:fixed md:fixed">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6">
+                <div class="items-center border-b-2 border-gray-100 py-6 md:space-x-10">
+                    <nav class="flex space-x-10 justify-center">
+                        <a href="/" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Home</a>
+                        <a href="/docs" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Docs</a>
+                        <a href="https://twitter.com/IDriss_xyz" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Twitter</a>
+                        <a href="https://discord.gg/RJhJKamjw5" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900">Discord</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
 
         <script>
             function showOtherAssets() {
                 document.getElementById("OtherAssets").style.display = "";
                 document.getElementById("ButtonOtherAssets").innerHTML = "Hide";
-                document.getElementById("ButtonOtherAssets").setAttribute('onclick','hideOtherAssets()')
+                document.getElementById("ButtonOtherAssets").setAttribute("onclick", "hideOtherAssets()");
             }
 
             function hideOtherAssets() {
                 document.getElementById("OtherAssets").style.display = "none";
                 document.getElementById("ButtonOtherAssets").innerHTML = "Show";
-                document.getElementById("ButtonOtherAssets").setAttribute('onclick','showOtherAssets()')
+                document.getElementById("ButtonOtherAssets").setAttribute("onclick", "showOtherAssets()");
             }
 
             function goToStep2() {
@@ -260,7 +273,7 @@
                 document.getElementById("DivStep1").style.display = "";
                 document.getElementById("DivClaimToken").style.display = "";
                 document.getElementById("DivClaimNFT").style.display = "none";
-                document.getElementById("ButtonTokenNFT").setAttribute('onclick','toggleNFTFlow()')
+                document.getElementById("ButtonTokenNFT").setAttribute("onclick", "toggleNFTFlow()");
                 document.getElementById("ButtonTokenNFT").innerHTML = "Toggle NFT flow";
             }
 
@@ -271,13 +284,10 @@
                 document.getElementById("DivStep1").style.display = "";
                 document.getElementById("DivClaimToken").style.display = "none";
                 document.getElementById("DivClaimNFT").style.display = "";
-                document.getElementById("ButtonTokenNFT").setAttribute('onclick','toggleTokenFlow()')
+                document.getElementById("ButtonTokenNFT").setAttribute("onclick", "toggleTokenFlow()");
                 document.getElementById("ButtonTokenNFT").innerHTML = "Toggle token flow";
             }
-
-
         </script>
-
 
         <script src="https://cdn.jsdelivr.net/npm/jquery@3/dist/jquery.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/buffer@6"></script>
@@ -290,7 +300,5 @@
         <script type="text/javascript" src="../static/js/claimJavascript.js"></script>
         <script src="https://unpkg.com/idriss-crypto/lib/bundle/global.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-
     </body>
 </html>

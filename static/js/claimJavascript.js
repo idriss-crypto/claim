@@ -140,9 +140,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         walletTag: 'Public ETH',
     }
     if (window.ethereum) {
-        window.web3 = new Web3(window.ethereum);
+        window.web3 = defaultWeb3Polygon
     } else {
-        window.web3 = defaultWeb3
+        window.web3 = defaultWeb3Polygon
     }
 
     if (identifier && claimPassword) {
@@ -570,6 +570,7 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
         })
     //TODO: end waiting animation
     console.log(result)
+    triggerSuccess();
 }
 
 function showTwitterVerification(msg_) {
@@ -657,6 +658,14 @@ function hideNFTPath() {
     document.getElementById("DivClaimNFT").style.display = "none";
 }
 
+// ToDo: add asset information
+function triggerSuccess() {
+    document.getElementById("zerion").href = "https://app.zerion.io/"+selectedAccount+"/overview"
+    document.getElementById("DivStep4").style.display = "";
+    document.getElementById("DivStep1").style.display = "none";
+    document.getElementById("DivStep2").style.display = "none";
+    document.getElementById("DivStep3").style.display = "none";
+}
 
 // to delete an IDriss:
 // to delete an IDriss:
