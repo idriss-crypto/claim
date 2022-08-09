@@ -12,11 +12,79 @@ let priceOracleContractAddress
 let sendToAnyoneContract
 const ENV = 'production'
 let paymentsToClaim = []
+const defaultWeb3Polygon = new Web3(new Web3.providers.HttpProvider("https://rpc.ankr.com/polygon"));
 
 const walletType = {
     coin: 'ETH',
     network: 'evm',
     walletTag: 'Public ETH'
+}
+// use universal token list and api fo pricing in the future
+let oracleAddress = {
+    ethereum: {
+        ETH: ["0xf9680d99d6c9589e2a93a78a04a279e509205945", 18],
+        "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48": ["0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7", 6], // USDC ETH
+        "0xdAC17F958D2ee523a2206206994597C13D831ec7": ["0x0a6513e40db6eb1b165753ad52e80663aea50545", 6], // USDT ETH
+        "0x6B175474E89094C44Da98b954EedeAC495271d0F": ["0x4746dec9e833a82ec7c2c1356372ccf2cfcd2f3d", 18], // DAI ETH
+    },
+    polygon: {
+        "0x0000000000000000000000000000000000000000": ["0xab594600376ec9fd91f8e885dadf0ce036862de0", 18], // MATIC Polygon
+        "0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619": ["0xf9680d99d6c9589e2a93a78a04a279e509205945", 18], // WETH Polygon
+        "0x2791bca1f2de4661ed88a30c99a7a9449aa84174": ["0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7", 6], // USDC Polygon
+        "0xc2132d05d31c914a87c6611c10748aeb04b58e8f": ["0x0a6513e40db6eb1b165753ad52e80663aea50545", 6], // USDT Polygon
+        "0x8f3cf7ad23cd3cadbd9735aff958023239c6a063": ["0x4746dec9e833a82ec7c2c1356372ccf2cfcd2f3d", 18], // DAI Polygon
+    },
+    bsc: {
+        BNB: ["0x82a6c4af830caa6c97bb504425f6a66165c2c26e", 18],
+        "0x2170Ed0880ac9A755fd29B2688956BD959F933F8": ["0xf9680d99d6c9589e2a93a78a04a279e509205945", 18], // WETH BSC
+        "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d": ["0xfe4a8cc5b5b2366c1b58bea3858e81843581b2f7", 18], // USDC BSC
+        "0x1AF3F329e8BE154074D8769D1FFa4eE058B1DBc3": ["0x4746dec9e833a82ec7c2c1356372ccf2cfcd2f3d", 18], // DAI BSC
+        "0xbA2aE424d960c26247Dd6c32edC70B295c744C43": ["0xbaf9327b6564454f4a3364c33efeef032b4b4444", 8], // DOGE BSC
+    },
+};
+// add ids of token not supported in chainlink oracles
+let coingeckoId = {
+    ethereum: {
+        "0xf0f9d895aca5c8678f706fb8216fa22957685a13": ["cult-dao", 18], // CULT ETH
+    },
+    polygon: {
+        "0xf0f9D895aCa5c8678f706FB8216fa22957685A13": ["revolt-2-earn", 18], // RVLT Polygon
+    },
+};
+
+async function loadOracle(network, assetContract) {
+    let abiOracle = [{inputs:[{internalType:"address",name:"_aggregator",type:"address",},{internalType:"address",name:"_accessController",type:"address",},],stateMutability:"nonpayable",type:"constructor",},{anonymous:false,inputs:[{indexed:true,internalType:"int256",name:"current",type:"int256",},{indexed:true,internalType:"uint256",name:"roundId",type:"uint256",},{indexed:false,internalType:"uint256",name:"updatedAt",type:"uint256",},],name:"AnswerUpdated",type:"event",},{anonymous:false,inputs:[{indexed:true,internalType:"uint256",name:"roundId",type:"uint256",},{indexed:true,internalType:"address",name:"startedBy",type:"address",},{indexed:false,internalType:"uint256",name:"startedAt",type:"uint256",},],name:"NewRound",type:"event",},{anonymous:false,inputs:[{indexed:true,internalType:"address",name:"from",type:"address",},{indexed:true,internalType:"address",name:"to",type:"address",},],name:"OwnershipTransferRequested",type:"event",},{anonymous:false,inputs:[{indexed:true,internalType:"address",name:"from",type:"address",},{indexed:true,internalType:"address",name:"to",type:"address",},],name:"OwnershipTransferred",type:"event",},{inputs:[],name:"acceptOwnership",outputs:[],stateMutability:"nonpayable",type:"function",},{inputs:[],name:"accessController",outputs:[{internalType:"contractAccessControllerInterface",name:"",type:"address",},],stateMutability:"view",type:"function",},{inputs:[],name:"aggregator",outputs:[{internalType:"address",name:"",type:"address",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"address",name:"_aggregator",type:"address",},],name:"confirmAggregator",outputs:[],stateMutability:"nonpayable",type:"function",},{inputs:[],name:"decimals",outputs:[{internalType:"uint8",name:"",type:"uint8",},],stateMutability:"view",type:"function",},{inputs:[],name:"description",outputs:[{internalType:"string",name:"",type:"string",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"uint256",name:"_roundId",type:"uint256",},],name:"getAnswer",outputs:[{internalType:"int256",name:"",type:"int256",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"uint80",name:"_roundId",type:"uint80",},],name:"getRoundData",outputs:[{internalType:"uint80",name:"roundId",type:"uint80",},{internalType:"int256",name:"answer",type:"int256",},{internalType:"uint256",name:"startedAt",type:"uint256",},{internalType:"uint256",name:"updatedAt",type:"uint256",},{internalType:"uint80",name:"answeredInRound",type:"uint80",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"uint256",name:"_roundId",type:"uint256",},],name:"getTimestamp",outputs:[{internalType:"uint256",name:"",type:"uint256",},],stateMutability:"view",type:"function",},{inputs:[],name:"latestAnswer",outputs:[{internalType:"int256",name:"",type:"int256",},],stateMutability:"view",type:"function",},{inputs:[],name:"latestRound",outputs:[{internalType:"uint256",name:"",type:"uint256",},],stateMutability:"view",type:"function",},{inputs:[],name:"latestRoundData",outputs:[{internalType:"uint80",name:"roundId",type:"uint80",},{internalType:"int256",name:"answer",type:"int256",},{internalType:"uint256",name:"startedAt",type:"uint256",},{internalType:"uint256",name:"updatedAt",type:"uint256",},{internalType:"uint80",name:"answeredInRound",type:"uint80",},],stateMutability:"view",type:"function",},{inputs:[],name:"latestTimestamp",outputs:[{internalType:"uint256",name:"",type:"uint256",},],stateMutability:"view",type:"function",},{inputs:[],name:"owner",outputs:[{internalType:"addresspayable",name:"",type:"address",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"uint16",name:"",type:"uint16",},],name:"phaseAggregators",outputs:[{internalType:"contractAggregatorV2V3Interface",name:"",type:"address",},],stateMutability:"view",type:"function",},{inputs:[],name:"phaseId",outputs:[{internalType:"uint16",name:"",type:"uint16",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"address",name:"_aggregator",type:"address",},],name:"proposeAggregator",outputs:[],stateMutability:"nonpayable",type:"function",},{inputs:[],name:"proposedAggregator",outputs:[{internalType:"contractAggregatorV2V3Interface",name:"",type:"address",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"uint80",name:"_roundId",type:"uint80",},],name:"proposedGetRoundData",outputs:[{internalType:"uint80",name:"roundId",type:"uint80",},{internalType:"int256",name:"answer",type:"int256",},{internalType:"uint256",name:"startedAt",type:"uint256",},{internalType:"uint256",name:"updatedAt",type:"uint256",},{internalType:"uint80",name:"answeredInRound",type:"uint80",},],stateMutability:"view",type:"function",},{inputs:[],name:"proposedLatestRoundData",outputs:[{internalType:"uint80",name:"roundId",type:"uint80",},{internalType:"int256",name:"answer",type:"int256",},{internalType:"uint256",name:"startedAt",type:"uint256",},{internalType:"uint256",name:"updatedAt",type:"uint256",},{internalType:"uint80",name:"answeredInRound",type:"uint80",},],stateMutability:"view",type:"function",},{inputs:[{internalType:"address",name:"_accessController",type:"address",},],name:"setController",outputs:[],stateMutability:"nonpayable",type:"function",},{inputs:[{internalType:"address",name:"_to",type:"address",},],name:"transferOwnership",outputs:[],stateMutability:"nonpayable",type:"function",},{inputs:[],name:"version",outputs:[{internalType:"uint256",name:"",type:"uint256",},],stateMutability:"view",type:"function",},];
+    return await new defaultWeb3Polygon.eth.Contract(abiOracle, oracleAddress[network][assetContract][0]);
+}
+
+async function getPrice(oracleContract) {
+    let latestAnswer = oracleContract.methods.latestAnswer().call();
+    let decimals = oracleContract.methods.decimals().call();
+    return (await latestAnswer) / Math.pow(10, await decimals);
+}
+
+async function getVal(tippingAmount, tokenPrice, decimals) {
+    return roundUp((tippingAmount / Math.pow(10, decimals)) * tokenPrice, 2);
+}
+
+function roundUp(num, precision) {
+    precision = Math.pow(10, precision);
+    return Math.ceil(num * precision) / precision;
+}
+
+async function calculateDollar(network_, assetAddr_, amount_) {
+    let priceSt;
+    if (oracleAddress[network_][assetAddr_][0]) {
+        let oracle = await this.loadOracle(network_, assetAddr_); // token ticker selected
+        priceSt = await this.getPrice(oracle);
+    } else {
+        let response = await (await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coingeckoId[network_][assetAddr_][0]}&vs_currencies=USD`)).json();
+        priceSt = Object.values(Object.values(response)[0])[0];
+    }
+
+    let decimals = oracleAddress[network_][assetAddr_][1];
+    let val = this.getVal(amount_, priceSt, decimals);
+    return val;
 }
 
 //TODO: check contract addresses for test and prod
@@ -111,6 +179,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             let claimable = await sendToAnyoneContract.methods.balanceOf(events[i].returnValues.toHash, 0, events[i].returnValues.assetContractAddress).call();
             console.log(claimable)
             if (claimable>0) {
+                hideNFTPath();
+                dollarValue = await calculateDollar("polygon", events[i].returnValues.assetContractAddress, claimable)
+                document.getElementById("welcomeMessage").innerHTML = "You received " + "$" + dollarValue + " in MATIC";
+                document.getElementById("tipMessage").innerHTML = "Welcome to crypto!"
                 paymentsToClaim.push({
                     amount: events[i].returnValues.amount,
                     assetContractAddress: events[i].returnValues.assetContractAddress,
@@ -399,10 +471,6 @@ async function init(providerInfo) {
 
 // should be triggered automatically based on identifier information.
 // connect wallet first
-// check if IDriss is already registered an go straight to claim method?
-// idriss = new IdrissCrypto.IdrissCrypto()
-// idriss.resolve(identifier) -> check if Public ETH tag is found
-// or call contract directly with specific IDrissHash
 async function signUp() {
     // identifier based on param in url
     identifierInput = identifier;
@@ -578,6 +646,15 @@ async function switchtopolygon() {
             throw "network"
         }
     }
+}
+
+function hideNFTPath() {
+    document.getElementById("DivStep2").style.display = "none";
+    document.getElementById("DivStep3").style.display = "none";
+    document.getElementById("DivStep4").style.display = "none";
+    document.getElementById("DivStep1").style.display = "";
+    document.getElementById("DivClaimToken").style.display = "";
+    document.getElementById("DivClaimNFT").style.display = "none";
 }
 
 
