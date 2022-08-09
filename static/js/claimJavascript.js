@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentBlockNumber = await window.web3.eth.getBlockNumber()
         const promises = []
         const events = []
-        for (let i = currentBlockNumber; i > currentBlockNumber - 20000; i -= 1000) {
+        for (let i = currentBlockNumber; i > currentBlockNumber - 50000; i -= 1000) {
             const fromBlock = i - 1000
             const toBlock = i
             promises.push(
@@ -103,21 +103,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                 })
             )
         }
+
         await Promise.all(promises)
-        // const events = await sendToAnyoneContract.getPastEvents('AssetTransferred',{
-        //     filter: {toHash: userHash},
-        //     fromBlock: 'earliest',
-        //     toBlock: 'latest'
-        // })
 
         for (let i = 0; i < events.length; i++) {
             // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
-            paymentsToClaim.push({
-                amount: events[i].returnValues.amount,
-                assetContractAddress: events[i].returnValues.assetContractAddress,
-                from: events[i].returnValues.from,
-                toHash: events[i].returnValues.toHash
-            })
+            let claimable = await sendToAnyoneContract.methods.balanceOf(events[i].returnValues.toHash, 0, events[i].returnValues.assetContractAddress).call();
+            console.log(claimable)
+            if (claimable>0) {
+                paymentsToClaim.push({
+                    amount: events[i].returnValues.amount,
+                    assetContractAddress: events[i].returnValues.assetContractAddress,
+                    from: events[i].returnValues.from,
+                    toHash: events[i].returnValues.toHash
+                })
+            }
         }
 
         console.log(events)
