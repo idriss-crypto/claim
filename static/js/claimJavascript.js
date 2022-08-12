@@ -346,6 +346,17 @@ const evmChains = window.evmChains;
 const WalletLink = window.WalletLink;
 const Fortmatic = window.Fortmatic;
 
+const customNodePolygon = {
+  rpcUrl: 'https://rpc-mainnet.maticvigil.com/',
+  chainId: 137,
+}
+
+const magic = new Magic('pk_live_75AE254AAEBDCF4B', {
+  extensions: [new MagicConnectExtension()],
+  network: customNodePolygon
+});
+
+
 // Web3modal instance
 let web3Modal;
 
@@ -513,12 +524,12 @@ if (deviceType() === "desktop") {
 
 async function init(providerInfo) {
     console.log(providerInfo)
-    if (providerInfo == "fm") {
+    if (providerInfo == "magic") {
         // key for mainnet:
         // pk_live_05E291BB168EC551
         // pk_test_589EBE0E7D8CB015
-        fm = new Fortmatic('pk_live_05E291BB168EC551', MATICOptions);
-        web3 = new Web3(fm.getProvider());
+        //fm = new Fortmatic('pk_live_05E291BB168EC551', MATICOptions);
+        web3 = new Web3(magic.rpcProvider);
         // let people sign in or up
         await web3.currentProvider.enable();
     } else {
@@ -683,6 +694,8 @@ async function copyTweet() {
         tooltip.style.visibility = "hidden";
     }, 1000);
 }
+
+
 
 function isMetaMaskInstalled(){
     if (window.ethereum.isMetaMask) {
