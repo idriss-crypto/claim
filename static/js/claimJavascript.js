@@ -14,7 +14,7 @@ let sendToAnyoneContractAddress
 let idrissRegistryContractAddress
 let priceOracleContractAddress
 let sendToAnyoneContract
-const ENV = 'local'
+const ENV = 'production'
 let validateApiName = ENV === 'production' ? 'Authorization' : 'AuthorizationTestnet';
 let paymentsToClaim = []
 
@@ -23,6 +23,10 @@ const walletType = {
     network: 'evm',
     walletTag: 'Public ETH'
 }
+const assetTypes = {}
+assetTypes['native'] = 0
+assetTypes['erc20']  = 1
+assetTypes['erc721'] = 2
 // use universal token list and api fo pricing in the future
 let oracleAddress
 if (ENV === 'production') {
@@ -163,11 +167,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     defaultWeb3 = new Web3(provider)
     let params = new URL(document.location).searchParams;
     identifier = params.get('identifier');
-    claimPassword = params.get('claimPassword')
-    assetId = params.get('assetId')
-    assetType = params.get('assetType')
-    assetAddress = params.get('assetAddress')
-    token = params.get('token')
+    claimPassword = params.get('claimPassword');
+    assetId = params.get('assetId');
+    assetType = assetTypes[params.get('assetType')];
+    assetAddress = params.get('assetAddress');
+    token = params.get('token');
+
     console.log({identifier, claimPassword})
     idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
         web3Provider: provider,
@@ -248,6 +253,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                         We need to transfer this format to
                         https://ipfs.io/ipfs/bafybeie5vf6lyyu2y7fyoztj52y3gsyiuhorfibmfderm5zcaibjrxzkbe/NFT28.png
                      */
+                     // or use ierc721 to fetch token uri
                     await fetch('https://eth-mainnet.g.alchemy.com/nft/v2/k9tHd_GSazWwIVyu4lkeZz1EVDjg2qwN/getNFTMetadata?contractAddress=0x0beed7099af7514ccedf642cfea435731176fb02&tokenId=1')
                         .then(response => response.json())
                         .then(json => {
@@ -642,7 +648,7 @@ async function validate() {
     await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress)
 }
 
-async function claim(amount, assetType, assetContractAddress) {
+async function claim(amount, assetType, assetContractAddress, assetId = 0) {
     //init again to get new connected provider
     idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
         web3Provider: web3.currentProvider,
@@ -654,6 +660,7 @@ async function claim(amount, assetType, assetContractAddress) {
         amount,
         type: assetType,
         assetContractAddress,
+        assetId
     }
     console.log("inside claim")
 
