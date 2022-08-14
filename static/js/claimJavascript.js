@@ -240,12 +240,12 @@ document.addEventListener('DOMContentLoaded', async () => {
                 dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
                 if (assetType == 0) {
                     hideNFTPath();
-                    claimMessageMain = "You received " + "$" + dollarValue + " in MATIC";
+                    claimMessageMain = "You have received " + "$" + dollarValue + " in MATIC";
                 } else if (assetType == 1) {
                     hideNFTPath();
                     const tokenContract = await loadERC20Contract(window.web3, assetContractAddress);
                     const symbol = await tokenContract.methods.symbol().call();
-                    claimMessageMain = `You received $${dollarValue} in ${symbol}`;
+                    claimMessageMain = `You have received $${dollarValue} in ${symbol}`;
                 } else {
                     //TODO: remove hardcode
                     /* TODO: translate ipfs addresses
@@ -257,7 +257,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     await fetch('https://eth-mainnet.g.alchemy.com/nft/v2/k9tHd_GSazWwIVyu4lkeZz1EVDjg2qwN/getNFTMetadata?contractAddress=0x0beed7099af7514ccedf642cfea435731176fb02&tokenId=1')
                         .then(response => response.json())
                         .then(json => {
-                                claimMessageMain = `You received ${json.title}`;
+                                claimMessageMain = `You have received ${json.title}`;
                                 document.getElementById("nftId").src = json.media[0].gateway;
                             console.log("IMAGE")
                                 console.log(json)
@@ -568,7 +568,7 @@ async function init(providerInfo) {
     document.getElementById("identifierInput").innerHTML = identifier;
     document.getElementById("identifierTemp").style.display = '';
     document.getElementById("DivStep3").style.display = '';
-    document.getElementById("DivStep2").style.display = 'none';
+    document.getElementById("DivStep1").style.display = 'none';
     await signUp();
 }
 
@@ -769,7 +769,6 @@ async function switchtopolygon() {
 function hideNFTPath() {
     document.getElementById("DivStep2").style.display = "none";
     document.getElementById("DivStep3").style.display = "none";
-    document.getElementById("DivStep4").style.display = "none";
     document.getElementById("DivStep1").style.display = "";
     document.getElementById("DivClaimToken").style.display = "";
     document.getElementById("DivClaimNFT").style.display = "none";
@@ -780,18 +779,17 @@ function hideNFTPath() {
 // document.getElementById("openseaLink").onclick = 'window.open('https://opensea.io/assets/ethereum/<assetContractAddress>/<assetID>')
 // document.getElementById("looksRareLink").onclick = 'window.open('https://looksrare.org/collections/<assetContractAddress>/<assetID>')
 function triggerSuccess() {
-    document.getElementById("zerion").href = "https://app.zerion.io/"+selectedAccount+"/overview"
-    document.getElementById("DivStep4").style.display = "";
+    document.getElementById("ZerionToken").href = "https://app.zerion.io/"+selectedAccount+"/overview"
+    document.getElementById("ZerionNFT").href = "https://app.zerion.io/"+selectedAccount+"/nfts"
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "none";
-    document.getElementById("DivStep3").style.display = "none";
+    document.getElementById("DivStep3").style.display = "";
 }
 
 //TODO: Mat, could you please add some eye pleasing CSS to DivError?
 function triggerError(e) {
     document.getElementById("ErrorDescription").innerHTML = JSON.stringify(e)
     document.getElementById("DivError").style.display = "";
-    document.getElementById("DivStep4").style.display = "none";
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "none";
     document.getElementById("DivStep3").style.display = "none";

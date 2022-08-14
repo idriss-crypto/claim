@@ -48,8 +48,8 @@
 
         <!-- DUMMY NAVIGATION -->
         <div class="flex space-x-1">
-            <div id="ButtonTokenNFT" onclick="toggleTokenFlow();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle token flow</div>
-            <div onclick="goToStep4();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle success page (NFT)</div>
+            <div id="ButtonTokenNFT" onclick="toggleTokenFlow();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle home page (TOKEN)</div>
+            <div id="ButtonTokenNFTSuccess" onclick="toggleTokenFlowSuccess();" class="border rounded-md py-3 px-4 items-center w-22 cursor-pointer hover:bg-gray-100">Toggle success page (TOKEN)</div>
         </div>
 
         <!-- MAIN CONTENT -->
@@ -59,13 +59,13 @@
                 <!-- IF TOKEN -->
                 <div id="DivClaimToken" style="display: none;">
                     <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                    <h2 id="welcomeMessage" class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Received $50 in ETH</h2>
-                    <h3 id="tipMessage" class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span class="italic">Enjoy your crypto adventure Dad! Tim.</span></h3>
+                    <h2 id="welcomeMessage" class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Have Received $50 in ETH</h2>
+                    <h3 class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span id="tipMessage" class="italic">Enjoy your crypto adventure Dad! Tim.</span></h3>
 
                     <!-- CLAIM BUTTON -->
                     <div class="mt-2 space-y-6 text-center" style="display: ;">
                         <div
-                            onclick="goToStep2();"
+                            onclick="init('magic');"
                             class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer"
                         >
                             Claim
@@ -108,7 +108,7 @@
                 <!-- IF NFT -->
                 <div id="DivClaimNFT" style="display: ;">
                     <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Received an NFT</h2>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Have Received an NFT</h2>
                     <h3 class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span class="italic">Happy 50-th birthday Mom! Lily.</span></h3>
                     <div class="max-w-2xl mx-auto py-16 px-4 sm:py-2 sm:px-6 lg:max-w-7xl lg:px-8">
                         <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
@@ -130,35 +130,14 @@
                                     alt=""
                                 />
                             </div>
-                            <button onclick="goToStep2();" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Claim</button>
+                            <button onclick="init('magic');" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Claim</button>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- STEP 2 -->
+            <!-- STEP 2 - REGISTRATION & CLAIMING -->
             <div id="DivStep2" style="display: none;" class="max-w-md w-full space-y-8">
-                <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Are You New to Crypto?</h2>
-
-                <div class="flex w-full space-x-5">
-                    <div
-                        onclick="init('magic');"
-                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase text-center hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
-                    >
-                        Yes, I'd liket to set up a new wallet
-                    </div>
-                    <div
-                        onclick="init('modal');"
-                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase text-center hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
-                    >
-                        No, I already have a wallet
-                    </div>
-                </div>
-            </div>
-
-            <!-- STEP 3 -->
-            <div id="DivStep3" style="display: none;" class="max-w-md w-full space-y-8">
                 <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Verify Your Identifier</h2>
 
@@ -186,50 +165,63 @@
                         <p id="otpError" class="text-red-500 font-medium hidden mt-1">Wrong OTP.</p>
                     </div>
 
-                    <div
-                        onclick="validate();"
-                        class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer"
-                    >
-                        Continue / I have posted
-                    </div>
+                    <div onclick="validate();" class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer">Continue / I have posted</div>
+                </div>
+                <!-- LENNARD - LOADING SPINNER BEFORE THE MAGIC WALLET GETS THE FAUCET TRANSACTION -->
+                <div id="Spinner" style="display: none;">
+                    <svg class="inline mt-2 w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-[#11dd74]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
+                        <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
+                    </svg>
                 </div>
             </div>
 
-            <!-- STEP 4 -->
-            <div id="DivStep4" style="display: none;" class="max-w-md w-full">
-                <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
-                <h3 class="mt-4 text-center text-sm text-gray-700"> Check your wallet on <a id="zerion" class="text-base font-medium text-green-500 hover:text-green-900" href="/" target="_blank">Zerion</a></h3>
-                <div id="NFTClaimed" style="display: none" class="max-w-2xl mx-auto py-16 px-4 sm:py-8 sm:px-6 lg:max-w-7xl lg:px-8">
-                    <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                        <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
-                    </div>
-                    <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
-                    <div class="flex items-center justify-between">
-                        <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
-                            <img id="openseaLink" class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')" src="../static/images/opensea.svg" alt="" />
-                            <img
-                                id="looksRareLink"
-                                class="inline-block h-6 w-6 rounded-full"
-                                onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')"
-                                src="../static/images/looksrare.svg"
-                                alt=""
-                            />
+            <!-- STEP 3 - SUCCESS -->
+            <div id="DivStep3" style="display: none;" class="max-w-md w-full">
+
+                <!-- IF TOKEN -->
+                <div id="DivClaimTokenDone" style="display: none;">
+                    <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
+                    <h3 class="mt-4 text-center text-sm text-gray-700"> Check your wallet on <a id="ZerionToken" class="text-base font-medium text-green-500 hover:text-green-900" href="/" target="_blank">Zerion</a></h3>
+                </div>
+
+                <!-- IF NFT -->
+                <div id="DivClaimNFTDone" style="display: none;">
+                    <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
+                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
+                    <h3 class="mt-4 text-center text-sm text-gray-700"> Check your wallet on <a id="ZerionNFT" class="text-base font-medium text-green-500 hover:text-green-900" href="/" target="_blank">Zerion</a></h3>
+                    <div id="NFTClaimed" style="display: " class="max-w-2xl mx-auto py-16 px-4 sm:py-8 sm:px-6 lg:max-w-7xl lg:px-8">
+                        <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
+                            <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
                         </div>
-                        <button onclick="goToStep2();" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Share on Twitter</button>
+                        <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
+                        <div class="flex items-center justify-between">
+                            <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
+                                <img id="openseaLink" class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')" src="../static/images/opensea.svg" alt="" />
+                                <img
+                                    id="looksRareLink"
+                                    class="inline-block h-6 w-6 rounded-full"
+                                    onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')"
+                                    src="../static/images/looksrare.svg"
+                                    alt=""
+                                />
+                            </div>
+                            <button onclick="window.open('https://twitter.com','_blank')" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Share on Twitter</button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- STEP 4 -->
-        <div id="DivError" style="display: none;" class="max-w-md w-full">
+        <!-- STEP 3 ERROR -->
+        <div id="DivError" style="display: ;" class="max-w-md w-full">
             <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
             <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Error</h2>
             <h3 class="mt-4 text-center text-sm text-gray-700">Details</h3>
             <h3 id="ErrorDescription" class="mt-4 text-center text-sm text-gray-700"></h3>
         </div>
-        </div>
+
 
         <!-- FOOTER -->
 
@@ -260,43 +252,44 @@
                 document.getElementById("ButtonOtherAssets").setAttribute("onclick", "showOtherAssets()");
             }
 
-            function goToStep2() {
-                document.getElementById("DivStep2").style.display = "";
-                document.getElementById("DivStep1").style.display = "none";
-            }
-
-            function goToStep3() {
-                document.getElementById("DivStep3").style.display = "";
-                document.getElementById("DivStep2").style.display = "none";
-            }
-
-            function goToStep4() {
-                document.getElementById("DivStep4").style.display = "";
-                document.getElementById("DivStep1").style.display = "none";
-                document.getElementById("DivStep2").style.display = "none";
-                document.getElementById("DivStep3").style.display = "none";
-            }
-
             function toggleTokenFlow() {
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "none";
-                document.getElementById("DivStep4").style.display = "none";
                 document.getElementById("DivStep1").style.display = "";
                 document.getElementById("DivClaimToken").style.display = "";
                 document.getElementById("DivClaimNFT").style.display = "none";
                 document.getElementById("ButtonTokenNFT").setAttribute("onclick", "toggleNFTFlow()");
-                document.getElementById("ButtonTokenNFT").innerHTML = "Toggle NFT flow";
+                document.getElementById("ButtonTokenNFT").innerHTML = "Toggle home page (NFT)";
             }
 
             function toggleNFTFlow() {
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "none";
-                document.getElementById("DivStep4").style.display = "none";
                 document.getElementById("DivStep1").style.display = "";
                 document.getElementById("DivClaimToken").style.display = "none";
                 document.getElementById("DivClaimNFT").style.display = "";
                 document.getElementById("ButtonTokenNFT").setAttribute("onclick", "toggleTokenFlow()");
-                document.getElementById("ButtonTokenNFT").innerHTML = "Toggle token flow";
+                document.getElementById("ButtonTokenNFT").innerHTML = "Toggle home page (TOKEN)";
+            }
+
+            function toggleTokenFlowSuccess() {
+                document.getElementById("DivStep2").style.display = "none";
+                document.getElementById("DivStep3").style.display = "";
+                document.getElementById("DivStep1").style.display = "none";
+                document.getElementById("DivClaimTokenDone").style.display = "";
+                document.getElementById("DivClaimNFTDone").style.display = "none";
+                document.getElementById("ButtonTokenNFTSuccess").setAttribute("onclick", "toggleNFTFlowSuccess()");
+                document.getElementById("ButtonTokenNFTSuccess").innerHTML = "Toggle success page (NFT)";
+            }
+
+            function toggleNFTFlowSuccess() {
+                document.getElementById("DivStep2").style.display = "none";
+                document.getElementById("DivStep3").style.display = "";
+                document.getElementById("DivStep1").style.display = "none";
+                document.getElementById("DivClaimTokenDone").style.display = "none";
+                document.getElementById("DivClaimNFTDone").style.display = "";
+                document.getElementById("ButtonTokenNFTSuccess").setAttribute("onclick", "toggleTokenFlowSuccess()");
+                document.getElementById("ButtonTokenNFTSuccess").innerHTML = "Toggle success page (TOKEN)";
             }
         </script>
 
