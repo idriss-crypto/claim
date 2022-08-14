@@ -4,6 +4,7 @@ let assetId
 let assetType
 let assetAddress
 let token
+let blockNumber
 let idriss
 let userHash
 let userHashForClaim
@@ -172,6 +173,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     assetType = assetTypes[params.get('assetType')];
     assetAddress = params.get('assetAddress');
     token = params.get('token');
+    blockNumber = params.get('blockNumber');
 
     console.log({identifier, claimPassword})
     idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
@@ -200,6 +202,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         const currentBlockNumber = await window.web3.eth.getBlockNumber()
         const promises = []
         const events = []
+        // use blocknumber as defined above
+        // fromBlock: blockNumber - 1
+        // toBlock: blockNumber + 1
         for (let i = currentBlockNumber; i > currentBlockNumber - 50000 || i < 0; i -= 1000) {
             const possibleFromBlock = i - 1000
             const fromBlock = possibleFromBlock < 0 ? 0 : possibleFromBlock
