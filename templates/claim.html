@@ -117,18 +117,13 @@
                         <h3 id="nftName" class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
                         <div class="flex items-center justify-between">
                             <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
-                                <img
-                                    class="inline-block h-6 w-6 rounded-full"
-                                    onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')"
-                                    src="../static/images/opensea.svg"
-                                    alt=""
-                                />
-                                <img
-                                    class="inline-block h-6 w-6 rounded-full"
-                                    onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')"
-                                    src="../static/images/looksrare.svg"
-                                    alt=""
-                                />
+                                <a id="openseaLink" href="https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344" target="_blank">
+                                    <img
+                                        class="inline-block h-6 w-6 rounded-full"
+                                        src="../static/images/opensea.svg"
+                                        alt=""
+                                    />
+                                </a>
                             </div>
                             <button onclick="init('magic');" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Claim</button>
                         </div>
@@ -143,7 +138,7 @@
 
                 <div id="identifierTemp" style="display: none;" class="mt-2 sm:mt-0 mb-6 sm:w-60 m-auto">
                     <p class="text-sm text-gray-500 mb-1">Identifier:</p>
-                    <div id="identifierInput" name="" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></div>
+                    <div id="identifierInput" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></div>
                 </div>
                 <br />
                 <div id="validateDiv" style="display: none;" class="m-auto">
@@ -179,33 +174,27 @@
             <!-- STEP 3 - SUCCESS -->
             <div id="DivStep3" style="display: none;" class="max-w-md w-full">
 
-                <!-- IF TOKEN -->
-                <div id="DivClaimTokenDone" style="display: none;">
-                    <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
-                    <h3 class="mt-4 text-center text-sm text-gray-700"> Check your wallet on <a id="ZerionToken" class="text-base font-medium text-green-500 hover:text-green-900" href="/" target="_blank">Zerion</a></h3>
-                </div>
+                <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
+                <h3 class="mt-4 text-center text-sm text-gray-700"> Check your wallet on <a id="zerion" class="text-base font-medium text-green-500 hover:text-green-900" href="/" target="_blank">Zerion</a></h3>
 
                 <!-- IF NFT -->
+
                 <div id="DivClaimNFTDone" style="display: none;">
-                    <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                    <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Successfully claimed!</h2>
-                    <h3 class="mt-4 text-center text-sm text-gray-700"> Check your wallet on <a id="ZerionNFT" class="text-base font-medium text-green-500 hover:text-green-900" href="/" target="_blank">Zerion</a></h3>
-                    <div id="NFTClaimed" style="display: " class="max-w-2xl mx-auto py-16 px-4 sm:py-8 sm:px-6 lg:max-w-7xl lg:px-8">
+                    <div class="max-w-2xl mx-auto py-16 px-4 sm:py-2 sm:px-6 lg:max-w-7xl lg:px-8">
                         <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
-                            <img src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
+                            <img id="nftIdDone" src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
                         </div>
-                        <h3 class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
+                        <h3 id="nftNameDone" class="mt-4 text-sm text-gray-700"></h3>
                         <div class="flex items-center justify-between">
                             <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
-                                <img id="openseaLink" class="inline-block h-6 w-6 rounded-full" onclick=" window.open('https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344','_blank')" src="../static/images/opensea.svg" alt="" />
-                                <img
-                                    id="looksRareLink"
-                                    class="inline-block h-6 w-6 rounded-full"
-                                    onclick=" window.open('https://looksrare.org/collections/0x5180db8F5c931aaE63c74266b211F580155ecac8/4344?queryID=8fa8d27cbfaf1c26aa4d1a100d700b6c','_blank')"
-                                    src="../static/images/looksrare.svg"
-                                    alt=""
-                                />
+                                <a id="openseaLinkDone" href="https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344" target="_blank">
+                                    <img
+                                        class="inline-block h-6 w-6 rounded-full"
+                                        src="../static/images/opensea.svg"
+                                        alt=""
+                                    />
+                                </a>
                             </div>
                             <button onclick="window.open('https://twitter.com','_blank')" class="h-6 px-3 font-semibold rounded-md bg-black text-white hover:cursor-pointer group-hover:opacity-75">Share on Twitter</button>
                         </div>
@@ -286,7 +275,6 @@
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "";
                 document.getElementById("DivStep1").style.display = "none";
-                document.getElementById("DivClaimTokenDone").style.display = "none";
                 document.getElementById("DivClaimNFTDone").style.display = "";
                 document.getElementById("ButtonTokenNFTSuccess").setAttribute("onclick", "toggleTokenFlowSuccess()");
                 document.getElementById("ButtonTokenNFTSuccess").innerHTML = "Toggle success page (TOKEN)";

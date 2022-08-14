@@ -237,6 +237,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
             console.log(claimable)
             if (claimable>0) {
+                zerionLink = "https://app.zerion.io/"+selectedAccount+"/overview"
                 let claimMessageMain
                 // = messagewhen added above
                 let claimMessageSubtitle = "Welcome to Crypto!"
@@ -270,13 +271,18 @@ document.addEventListener('DOMContentLoaded', async () => {
                         .then(json => {
                                 claimNFTMain = `${json.name}`;
                                 document.getElementById("nftId").src = translateImageSRC(json.image);
+                                document.getElementById("nftIdDone").src = translateImageSRC(json.image);
                                 console.log("IMAGE")
                                 console.log(json)
                             })
                     document.getElementById("nftName").innerHTML = claimNFTMain;
+                    document.getElementById("nftNameDone").innerHTML = claimNFTMain;
                     document.getElementById("tipMessageNFT").innerHTML = claimMessageSubtitle;
+                    let openseaLink = 'https://opensea.io/assets/matic/'+ assetContractAddress +'/' + assetId
+                    document.getElementById("openseaLink").href = openseaLink
+                    document.getElementById("openseaLinkDone").href = openseaLink
+                    zerionLink = "https://app.zerion.io/"+selectedAccount+"/nfts"
                 }
-
                 paymentsToClaim.push({
                     amount,
                     assetContractAddress,
@@ -284,9 +290,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     assetType,
                     toHash,
                 })
+            } else {
+                // trigger nothing to claim
             }
         }
-
         console.log(events)
         console.log(paymentsToClaim)
     }
@@ -298,7 +305,7 @@ const regM = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 const regT = /^@[a-zA-Z0-9_]{1,15}$/;
 
 function translateImageSRC(_uri) {
-    if (_uri.startsWith("https")) return _uri
+    if (_uri.startsWith("http")) return _uri
     return _uri.replace("ipfs://", "https://ipfs.io/ipfs/");
 }
 
@@ -392,6 +399,7 @@ let account;
 let selectedAccount;
 let idHash;
 let paid;
+let zerionLink
 
 // Load our smart contract
 async function loadContract() {
@@ -791,13 +799,9 @@ function hideNFTPath() {
     document.getElementById("DivClaimNFT").style.display = "none";
 }
 
-// ToDo: add asset information
-// for nft:
-// document.getElementById("openseaLink").onclick = 'window.open('https://opensea.io/assets/ethereum/<assetContractAddress>/<assetID>')
-// document.getElementById("looksRareLink").onclick = 'window.open('https://looksrare.org/collections/<assetContractAddress>/<assetID>')
+
 function triggerSuccess() {
-    document.getElementById("ZerionToken").href = "https://app.zerion.io/"+selectedAccount+"/overview"
-    document.getElementById("ZerionNFT").href = "https://app.zerion.io/"+selectedAccount+"/nfts"
+    document.getElementById("zerion").href = zerionLink
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "none";
     document.getElementById("DivStep3").style.display = "";
