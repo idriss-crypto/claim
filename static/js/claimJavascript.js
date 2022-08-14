@@ -237,17 +237,21 @@ document.addEventListener('DOMContentLoaded', async () => {
             let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
             console.log(claimable)
             if (claimable>0) {
+                document.getElementById('DivStep0').style.display = 'none';
+                document.getElementById('DivStep1').style.display = '';
                 let claimMessageMain
                 // = message when added above
                 let claimMessageSubtitle = "Welcome to Crypto!"
                 if (assetType == 0) {
                     dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
                     hideNFTPath();
+                    document.getElementById('DivClaimToken').style.display = '';
                     claimMessageMain = "You have received " + "$" + dollarValue + " in MATIC";
                     document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
                     document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
                 } else if (assetType == 1) {
                     hideNFTPath();
+                    document.getElementById('DivClaimToken').style.display = '';
                     dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
                     const tokenContract = await loadERC20Contract(window.web3, assetContractAddress);
                     const symbol = await tokenContract.methods.symbol().call();
@@ -280,6 +284,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let openseaLink = 'https://opensea.io/assets/matic/'+ assetContractAddress +'/' + assetId
                     document.getElementById("openseaLink").href = openseaLink
                     document.getElementById("openseaLinkDone").href = openseaLink
+                    document.getElementById('DivClaimNFT').style.display = '';
                 }
                 paymentsToClaim.push({
                     amount,
@@ -289,7 +294,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                     toHash,
                 })
             } else {
-                // trigger nothing to claim
+                document.getElementById("spinnerStart").style.display = 'none';
+                document.getElementById("searchRes").innerHTML = 'Nothing to claim :(';
             }
         }
         console.log(events)
@@ -649,18 +655,35 @@ async function validate() {
         // let people pay only once
         // add "checkPayment" in case paid is true?
         if (!paid) {
+        // ToDo: error handling everywhere
+        }
             console.log(valid.gas)
             // faucet gas is sent in ValidateOTP with high gas fee, so should arrive relatively quickly
             // wallet shows very high gas if no funds are available
+            document.getElementById('spinnerText').innerHTML = "Confirming transaction 1 out of 2 ..."
+            document.getElementById('spinner').style.display = '';
             await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
                 from: selectedAccount,
                 value: 0,
                 gasPrice: valid.gas
             });
             paid = true
+            document.getElementById('spinnerText').innerHTML = "Validating payment ..."
         }
         // if successful creates link on registry
         checkedPayment = await IdrissCrypto[validateApiName].CheckPayment("MATIC", sessionKey);
+        checkRegistry();
+        await new Promise(res => {
+            spinner = document.getElementById("spinner")
+            spinner.addEventListener('signUpSuccess', e => {
+                console.log(e);
+                res()
+            })
+        })
+        await sleep(5000).then(() => {
+            console.log("Waiting 5 seconds")
+        })
+        document.getElementById('spinnerText').innerHTML = "Confirming transaction 2 out of 2 ..."
     }
     console.log("Success")
     await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId)
@@ -686,7 +709,6 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
         .then(response => response.json())
         .then(json => gas = String(Math.round(json['fast']['maxFee']*1000000000)))
     console.log({userHash, identifier, walletType, asset, gas})
-    //TODO: start waiting animation
     let result
     let isError = false
     await idriss.claim(identifier, claimPassword, walletType, asset, {gasPrice: gas })
@@ -697,10 +719,14 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
             isError = true
             triggerError(e)
         })
-    //TODO: end waiting animation
     console.log(result)
     if (result && result.status) {
-        triggerSuccess();
+        document.getElementById('spinnerText').innerHTML = "Confirmed transaction 2 out of 2!"
+        await sleep(3000).then(() => {
+            console.log("Trigger success page")
+            document.getElementById('spinner').style.display = 'none';
+            triggerSuccess();
+        })
     } else if (!isError) {
         triggerError(result)
     }
@@ -722,6 +748,21 @@ async function checkFunds(_address, _minBalance){
             clearInterval(interval)
         }
     }, 1000);
+}
+
+async function checkRegistry(){
+    intervalRegistry = setInterval(async function () {
+        spinner = document.getElementById("spinner")
+        res = idriss.resolve(identifier)
+        if (res['Public ETH']) {
+            spinner.dispatchEvent(Object.assign(new Event('signUpSuccess')));
+            clearInterval(intervalRegistry)
+        }
+    }, 1000);
+}
+
+function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 async function copyTweet() {
@@ -810,6 +851,7 @@ function triggerSuccess() {
     zerionLink = "https://app.zerion.io/"+selectedAccount+"/overview"
     if (assetType==2) {
         zerionLink = "https://app.zerion.io/"+selectedAccount+"/nfts"
+        document.getElementById("DivClaimNFTDone").style.display = "";
     }
     document.getElementById("zerion").href = zerionLink
     document.getElementById("DivStep1").style.display = "none";
