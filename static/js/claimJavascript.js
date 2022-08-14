@@ -17,6 +17,7 @@ let sendToAnyoneContract
 const ENV = 'production'
 let validateApiName = ENV === 'production' ? 'Authorization' : 'AuthorizationTestnet';
 let paymentsToClaim = []
+const defaultWeb3Polygon = new Web3(new Web3.providers.HttpProvider("https://rpc.ankr.com/polygon"));
 
 const walletType = {
     coin: 'ETH',
@@ -151,7 +152,7 @@ switch (ENV) {
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54"
         polygonChainId = 137
-        rpcEndpoint = "https://rpc.ankr.com/polygon"
+        rpcEndpoint = "https://rpc-mainnet.maticvigil.com/"
         sendToAnyoneContractAddress = '0xB1f313dbA7c470fF351e19625dcDCC442d3243C4'
         idrissRegistryContractAddress = '0x2eccb53ca2d4ef91a79213fddf3f8c2332c2a814'
         priceOracleContractAddress = '0xAB594600376Ec9fD91F8e885dADF0CE036862dE0'
@@ -160,7 +161,6 @@ switch (ENV) {
 
 // set default web3 + provider for frontend checks w/o connecting wallet
 let defaultWeb3
-const defaultWeb3Polygon = new Web3(new Web3.providers.HttpProvider(rpcEndpoint));
 
 document.addEventListener('DOMContentLoaded', async () => {
     let provider = new Web3.providers.HttpProvider(rpcEndpoint)
@@ -228,24 +228,32 @@ document.addEventListener('DOMContentLoaded', async () => {
         await Promise.all(promises)
 
         for (let i = 0; i < events.length; i++) {
+            // delete message and assetType => add when smart contract is updated
             const {
-                toHash, assetType, assetContractAddress, amount, from, message
+                toHash, assetContractAddress, amount, from
             } = events[i].returnValues
             // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
+            // assetType is defined on page load
             let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
             console.log(claimable)
             if (claimable>0) {
                 let claimMessageMain
-                let claimMessageSubtitle = message
-                dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
+                // = messagewhen added above
+                let claimMessageSubtitle = "Welcome to Crypto!"
                 if (assetType == 0) {
+                    dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
                     hideNFTPath();
                     claimMessageMain = "You have received " + "$" + dollarValue + " in MATIC";
+                    document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
+                    document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
                 } else if (assetType == 1) {
                     hideNFTPath();
+                    dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
                     const tokenContract = await loadERC20Contract(window.web3, assetContractAddress);
                     const symbol = await tokenContract.methods.symbol().call();
                     claimMessageMain = `You have received $${dollarValue} in ${symbol}`;
+                    document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
+                    document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
                 } else {
                     //TODO: remove hardcode
                     /* TODO: translate ipfs addresses
@@ -254,18 +262,21 @@ document.addEventListener('DOMContentLoaded', async () => {
                         https://ipfs.io/ipfs/bafybeie5vf6lyyu2y7fyoztj52y3gsyiuhorfibmfderm5zcaibjrxzkbe/NFT28.png
                      */
                      // or use ierc721 to fetch token uri
-                    await fetch('https://eth-mainnet.g.alchemy.com/nft/v2/k9tHd_GSazWwIVyu4lkeZz1EVDjg2qwN/getNFTMetadata?contractAddress=0x0beed7099af7514ccedf642cfea435731176fb02&tokenId=1')
+                    const ierc721 = await loadERC721Contract(defaultWeb3Polygon, assetContractAddress)
+                    const tokenURI = await ierc721.methods.tokenURI(assetId).call();
+                    console.log(tokenURI)
+                    await fetch(tokenURI)
                         .then(response => response.json())
                         .then(json => {
-                                claimMessageMain = `You have received ${json.title}`;
-                                document.getElementById("nftId").src = json.media[0].gateway;
-                            console.log("IMAGE")
+                                claimNFTMain = `${json.name}`;
+                                document.getElementById("nftId").src = translateImageSRC(json.image);
+                                console.log("IMAGE")
                                 console.log(json)
                             })
+                    document.getElementById("nftName").innerHTML = claimNFTMain;
+                    document.getElementById("tipMessageNFT").innerHTML = claimMessageSubtitle;
                 }
 
-                document.getElementById("welcomeMessage").innerHTML = claimMessageMain;
-                document.getElementById("tipMessage").innerHTML = claimMessageSubtitle; //TODO: maybe display only first message
                 paymentsToClaim.push({
                     amount,
                     assetContractAddress,
@@ -285,6 +296,11 @@ pubETHTag = "9306eda974cb89b82c0f38ab407f55b6d124159d1fa7779f2e088b2b786573c1"
 const regPh = /^(\+\(?\d{1,4}\s?)\)?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/;
 const regM = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 const regT = /^@[a-zA-Z0-9_]{1,15}$/;
+
+function translateImageSRC(_uri) {
+    if (_uri.startsWith("https")) return _uri
+    return _uri.replace("ipfs://", "https://ipfs.io/ipfs/");
+}
 
 async function loadERC721Contract (web3_, contractAddress_) {
     return await new web3_.eth.Contract(
@@ -307,9 +323,10 @@ async function loadPaymentMATIC(web3_) {
     );
 }
 
+// ToDo: correct the abi to new contract
 async function loadSendToAnyoneContract(web3_) {
     return await new web3_.eth.Contract(
-        [{"inputs":[{"internalType":"address","name":"_IDrissAddr","type":"address"},{"internalType":"address","name":"_maticUsdAggregator","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"beneficiary","type":"address"},{"indexed":true,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"enum AssetType","name":"assetType","type":"uint8"}],"name":"AssetClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"fromHash","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"enum AssetType","name":"assetType","type":"uint8"}],"name":"AssetMoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"enum AssetType","name":"assetType","type":"uint8"}],"name":"AssetTransferReverted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"},{"indexed":false,"internalType":"enum AssetType","name":"assetType","type":"uint8"},{"indexed":false,"internalType":"string","name":"message","type":"string"}],"name":"AssetTransferred","type":"event"},{"inputs":[{"internalType":"uint256","name":"_minimalPaymentFee","type":"uint256"},{"internalType":"uint256","name":"_paymentFeeDenominator","type":"uint256"}],"name":"changeMinimalPaymentFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_paymentFeePercentage","type":"uint256"},{"internalType":"uint256","name":"_paymentFeeDenominator","type":"uint256"}],"name":"changePaymentFeePercentage","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_IDrissHash","type":"string"},{"internalType":"string","name":"_claimPassword","type":"string"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"claimPaymentFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_FromIDrissHash","type":"bytes32"},{"internalType":"bytes32","name":"_ToIDrissHash","type":"bytes32"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"moveAssetToOtherHash","outputs":[],"stateMutability":"nonpayable","type":"function"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[{"internalType":"bytes32","name":"_IDrissHash","type":"bytes32"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"revertPayment","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_IDrissHash","type":"bytes32"},{"internalType":"uint256","name":"_amount","type":"uint256"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"},{"internalType":"uint256","name":"_assetId","type":"uint256"},{"internalType":"string","name":"_message","type":"string"}],"name":"sendToAnyone","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_IDrissHash","type":"bytes32"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"_IDrissHash","type":"string"},{"internalType":"string","name":"_claimPassword","type":"string"}],"name":"hashIDrissWithPassword","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"IDRISS_ADDR","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINIMAL_PAYMENT_FEE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINIMAL_PAYMENT_FEE_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bytes","name":"","type":"bytes"}],"name":"onERC721Received","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAYMENT_FEE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAYMENT_FEE_PERCENTAGE_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAYMENT_FEE_SLIPPAGE_PERCENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentFeesBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"}],
+        [{"inputs":[{"internalType":"address","name":"_IDrissAddr","type":"address"},{"internalType":"address","name":"_maticUsdAggregator","type":"address"}],"stateMutability":"nonpayable","type":"constructor"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"beneficiary","type":"address"},{"indexed":true,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AssetClaimed","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"fromHash","type":"bytes32"},{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":false,"internalType":"address","name":"assetContractAddress","type":"address"}],"name":"AssetMoved","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AssetTransferReverted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"bytes32","name":"toHash","type":"bytes32"},{"indexed":true,"internalType":"address","name":"from","type":"address"},{"indexed":true,"internalType":"address","name":"assetContractAddress","type":"address"},{"indexed":false,"internalType":"uint256","name":"amount","type":"uint256"}],"name":"AssetTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[],"name":"IDRISS_ADDR","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINIMAL_PAYMENT_FEE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"MINIMAL_PAYMENT_FEE_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAYMENT_FEE_PERCENTAGE","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAYMENT_FEE_PERCENTAGE_DENOMINATOR","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"PAYMENT_FEE_SLIPPAGE_PERCENT","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_IDrissHash","type":"bytes32"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"balanceOf","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"_minimalPaymentFee","type":"uint256"},{"internalType":"uint256","name":"_paymentFeeDenominator","type":"uint256"}],"name":"changeMinimalPaymentFee","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"uint256","name":"_paymentFeePercentage","type":"uint256"},{"internalType":"uint256","name":"_paymentFeeDenominator","type":"uint256"}],"name":"changePaymentFeePercentage","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_IDrissHash","type":"string"},{"internalType":"string","name":"_claimPassword","type":"string"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"claim","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[],"name":"claimPaymentFees","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"_IDrissHash","type":"string"},{"internalType":"string","name":"_claimPassword","type":"string"}],"name":"hashIDrissWithPassword","outputs":[{"internalType":"bytes32","name":"","type":"bytes32"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_FromIDrissHash","type":"bytes32"},{"internalType":"bytes32","name":"_ToIDrissHash","type":"bytes32"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"moveAssetToOtherHash","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"","type":"address"},{"internalType":"address","name":"","type":"address"},{"internalType":"uint256","name":"","type":"uint256"},{"internalType":"bytes","name":"","type":"bytes"}],"name":"onERC721Received","outputs":[{"internalType":"bytes4","name":"","type":"bytes4"}],"stateMutability":"pure","type":"function"},{"inputs":[],"name":"owner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"paymentFeesBalance","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"renounceOwnership","outputs":[],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_IDrissHash","type":"bytes32"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"}],"name":"revertPayment","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"bytes32","name":"_IDrissHash","type":"bytes32"},{"internalType":"uint256","name":"_amount","type":"uint256"},{"internalType":"enum AssetType","name":"_assetType","type":"uint8"},{"internalType":"address","name":"_assetContractAddress","type":"address"},{"internalType":"uint256","name":"_assetId","type":"uint256"}],"name":"sendToAnyone","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"bytes4","name":"interfaceId","type":"bytes4"}],"name":"supportsInterface","outputs":[{"internalType":"bool","name":"","type":"bool"}],"stateMutability":"pure","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferOwnership","outputs":[],"stateMutability":"nonpayable","type":"function"}],
         sendToAnyoneContractAddress
     );
 }
