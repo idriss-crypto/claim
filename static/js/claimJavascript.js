@@ -168,7 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     let params = new URL(document.location).searchParams;
     identifier = params.get('identifier');
     claimPassword = params.get('claimPassword');
-    assetId = params.get('assetId');
+    assetId = params.get('assetId') ?? 0;
     assetType = assetTypes[params.get('assetType')];
     assetAddress = params.get('assetAddress');
     token = params.get('token');
@@ -237,9 +237,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
             console.log(claimable)
             if (claimable>0) {
-                zerionLink = "https://app.zerion.io/"+selectedAccount+"/overview"
                 let claimMessageMain
-                // = messagewhen added above
+                // = message when added above
                 let claimMessageSubtitle = "Welcome to Crypto!"
                 if (assetType == 0) {
                     dollarValue = await calculateDollar("polygon", assetContractAddress, claimable)
@@ -281,7 +280,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     let openseaLink = 'https://opensea.io/assets/matic/'+ assetContractAddress +'/' + assetId
                     document.getElementById("openseaLink").href = openseaLink
                     document.getElementById("openseaLinkDone").href = openseaLink
-                    zerionLink = "https://app.zerion.io/"+selectedAccount+"/nfts"
                 }
                 paymentsToClaim.push({
                     amount,
@@ -553,37 +551,10 @@ if (deviceType() === "desktop") {
     Object.assign(providerOptions, TallyOpts);
 }
 
-async function init(providerInfo) {
-    console.log(providerInfo)
-    if (providerInfo == "magic") {
-        // key for mainnet:
-        // pk_live_05E291BB168EC551
-        // pk_test_589EBE0E7D8CB015
-        //fm = new Fortmatic('pk_live_05E291BB168EC551', MATICOptions);
-        web3 = new Web3(magic.rpcProvider);
-        // let people sign in or up
-        await web3.currentProvider.enable();
-    } else {
-        web3Modal = new Web3Modal({
-            network: 'mainnet',
-            cacheProvider: false, // optional
-            providerOptions, // required
-            disableInjectedProvider: true, // optional. For MetaMask / Brave / Opera.
-        });
-        try {
-            console.log("Trying to connect!");
-            document.getElementsByClassName("web3modal-modal-lightbox")[0].style.zIndex = "100";
-            provider = await web3Modal.connect();
-            web3 = new Web3(provider);
-            console.log("Connected!");
-            // switch to polygon network (mainnet!)
-            // for testnet check, please select provider = fm
-            await switchtopolygon();
-        } catch(e) {
-            console.log("Could not get a wallet connection", e);
-            return;
-        }
-    }
+async function init() {
+    web3 = new Web3(magic.rpcProvider);
+    // let people sign in or up
+    await web3.currentProvider.enable();
 
     // get wallet address
     accounts = await web3.eth.getAccounts();
@@ -592,8 +563,8 @@ async function init(providerInfo) {
 
     document.getElementById("identifierInput").innerHTML = identifier;
     document.getElementById("identifierTemp").style.display = '';
-    document.getElementById("DivStep3").style.display = '';
     document.getElementById("DivStep1").style.display = 'none';
+    document.getElementById("DivStep2").style.display = '';
     await signUp();
 }
 
@@ -628,7 +599,8 @@ async function signUp() {
             document.getElementById("OTP").style.display = "";
         }
     } else {
-        claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress)
+        // add check if connected wallet is owner of registered IDriss
+         await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId)
     }
 }
 
@@ -641,22 +613,43 @@ async function validate() {
         if (document.getElementById("OTPInput").value) {
             try {
                 valid = await IdrissCrypto[validateApiName].ValidateOTP(document.getElementById("OTPInput").value, sessionKey);
+                document.getElementById("otpError").style.display = "none";
             } catch {
-                document.getElementById("noTwitter-error").style.display = "block";
+                // add case of wrong otp error
+                document.getElementById("otpError").style.display = "block";
+                return
             }
         } else {
-            valid = await IdrissCrypto[validateApiName].ValidateOTP("0", sessionKey);
+             try {
+                valid = await IdrissCrypto[validateApiName].ValidateOTP("0", sessionKey);
+                document.getElementById("noTweet-error").style.display = "none";
+            } catch {
+                // add case of wrong otp error
+                document.getElementById("noTweet-error").style.display = "block";
+                return
+            }
+
         }
         paymentContract = await loadPaymentMATIC(web3);
-        // valid.receiptID should be string already
         // create receiptID for verification
         console.log(String(valid.receiptID))
+        // wait until funds arrived => spinner
+        document.getElementById("spinner").style.display='';
+        minBalance = roundUp(valid.gas*(1.1)*320000, 0)
+        checkFunds(selectedAccount, minBalance);
+        await new Promise(res => {
+            spinner = document.getElementById("spinner")
+            spinner.addEventListener('fundsArrived', e => {
+                console.log(e);
+                res()
+            })
+        })
+        document.getElementById("spinner").style.display='none';
         receipt_hash = await paymentContract.methods.hashReceipt(String(valid.receiptID), selectedAccount).call();
         // let people pay only once
         // add "checkPayment" in case paid is true?
         if (!paid) {
             console.log(valid.gas)
-            // somehow wait for faucet money to arrive?
             // faucet gas is sent in ValidateOTP with high gas fee, so should arrive relatively quickly
             // wallet shows very high gas if no funds are available
             await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
@@ -670,7 +663,7 @@ async function validate() {
         checkedPayment = await IdrissCrypto[validateApiName].CheckPayment("MATIC", sessionKey);
     }
     console.log("Success")
-    await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress)
+    await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId)
 }
 
 async function claim(amount, assetType, assetContractAddress, assetId = 0) {
@@ -716,6 +709,19 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
 function showTwitterVerification(msg_) {
     document.getElementById("twitterMsg").style.display = "";
     document.getElementById("tweetContent").innerText = msg_;
+}
+
+// ToDo: check if minBalance is correct
+async function checkFunds(_address, _minBalance){
+    interval = setInterval(async function () {
+        balance = await defaultWeb3Polygon.eth.getBalance(_address);
+        console.log("Balance is: ", balance)
+        if (balance > _minBalance) {
+            spinner = document.getElementById("spinner")
+            spinner.dispatchEvent(Object.assign(new Event('fundsArrived')));
+            clearInterval(interval)
+        }
+    }, 1000);
 }
 
 async function copyTweet() {
@@ -801,6 +807,10 @@ function hideNFTPath() {
 
 
 function triggerSuccess() {
+    zerionLink = "https://app.zerion.io/"+selectedAccount+"/overview"
+    if (assetType==2) {
+        zerionLink = "https://app.zerion.io/"+selectedAccount+"/nfts"
+    }
     document.getElementById("zerion").href = zerionLink
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "none";
