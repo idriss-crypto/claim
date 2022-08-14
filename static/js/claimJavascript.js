@@ -662,6 +662,9 @@ async function validate() {
             // wallet shows very high gas if no funds are available
             document.getElementById('spinnerText').innerHTML = "Confirming transaction 1 out of 2 ..."
             document.getElementById('spinner').style.display = '';
+            await sleep(3000).then(() => {
+                console.log("sleeping done inside")
+            })
             await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
                 from: selectedAccount,
                 value: 0,
