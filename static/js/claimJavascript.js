@@ -71,8 +71,10 @@ if (ENV === "production") {
 }
 
 // add ids of token not supported in chainlink oracles
+
 let coingeckoId;
 if (ENV === "production") {
+
     coingeckoId = {
         ethereum: {
             "0xf0f9d895aca5c8678f706fb8216fa22957685a13": ["cult-dao", 18], // CULT ETH
@@ -291,7 +293,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     assetType = assetTypes[params.get("assetType")];
     assetAddress = params.get("assetAddress");
     token = params.get("token");
-    blockNumber = params.get("blockNumber");
+    blockNumber = parseInt(params.get("blockNumber"));
 
     console.log({ identifier, claimPassword });
     idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
@@ -323,32 +325,22 @@ document.addEventListener("DOMContentLoaded", async () => {
         // use blocknumber as defined above
         // fromBlock: blockNumber - 1
         // toBlock: blockNumber + 1
-        for (let i = currentBlockNumber; i > currentBlockNumber - 50000 || i < 0; i -= 1000) {
-            const possibleFromBlock = i - 1000;
-            const fromBlock = possibleFromBlock < 0 ? 0 : possibleFromBlock;
-            const toBlock = i;
-            console.log({ fromBlock, toBlock });
-            promises.push(
-                sendToAnyoneContract
-                    .getPastEvents("AssetTransferred", {
-                        filter: { toHash: userHash },
-                        fromBlock: `${fromBlock}`,
-                        toBlock: `${toBlock}`,
-                    })
-                    .then((e) => {
-                        if (e.length > 0) {
-                            for (const eKey of e) {
-                                console.log(eKey);
-                                events.push(eKey);
-                            }
+        promises.push(
+            sendToAnyoneContract
+                .getPastEvents("AssetTransferred", {
+                    filter: { toHash: userHash },
+                    fromBlock: blockNumber - 1,
+                    toBlock: blockNumber + 1,
+                }).then((e) => {
+                    if (e.length > 0) {
+                        for (const eKey of e) {
+                            console.log(eKey);
+                            events.push(eKey);
                         }
-                    })
-            );
+                    }
+                })
+        );
 
-            if (possibleFromBlock < 0) {
-                break;
-            }
-        }
 
         await Promise.all(promises);
 
@@ -1264,6 +1256,7 @@ async function init() {
     document.getElementById("identifierTemp").style.display = "";
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "";
+    document.getElementById("validateDivOuter").style.display = "";
     await signUp();
 }
 
@@ -1298,6 +1291,7 @@ async function signUp() {
             document.getElementById("OTP").style.display = "";
         }
     } else {
+        document.getElementById("validateDivOuter").style.display = "none";
         // add check if connected wallet is owner of registered IDriss
         await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId);
     }
@@ -1314,6 +1308,7 @@ async function validate() {
             try {
                 valid = await IdrissCrypto[validateApiName].ValidateOTP(document.getElementById("OTPInput").value, sessionKey);
                 document.getElementById("otpError").style.display = "none";
+                document.getElementById("validateDivOuter").style.display = "none";
             } catch {
                 // add case of wrong otp error
                 document.getElementById("otpError").style.display = "block";
@@ -1329,6 +1324,7 @@ async function validate() {
                 return;
             }
         }
+        document.getElementById("validateDivOuter").style.display = "none";
         paymentContract = await loadPaymentMATIC(web3);
         // create receiptID for verification
         console.log(String(valid.receiptID));
