@@ -661,8 +661,7 @@ async function validate() {
         // let people pay only once
         // add "checkPayment" in case paid is true?
         if (!paid) {
-        // ToDo: error handling everywhere
-        }
+            // ToDo: error handling everywhere
             console.log(valid.gas)
             // faucet gas is sent in ValidateOTP with high gas fee, so should arrive relatively quickly
             // wallet shows very high gas if no funds are available
@@ -694,18 +693,14 @@ async function validate() {
         })
         document.getElementById('spinnerText').innerHTML = "Confirming transaction 2 out of 2 ..."
     }
-    console.log("Success")
+    console.log("Success sign-up")
     await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId)
+    console.log("Sucessful claim")
 }
 
 async function claim(amount, assetType, assetContractAddress, assetId = 0) {
-    //init again to get new connected provider
-    idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
-        web3Provider: web3.currentProvider,
-        sendToAnyoneContractAddress,
-        idrissRegistryContractAddress,
-        priceOracleContractAddress,
-    })
+    document.getElementById("spinner").style.display='';
+    document.getElementById('spinnerText').innerHTML = "Confirming transaction 2 out of 2 ..."
     const asset = {
         amount,
         type: assetType,
@@ -720,18 +715,24 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
     console.log({userHash, identifier, walletType, asset, gas})
     let result
     let isError = false
-    await idriss.claim(identifier, claimPassword, walletType, asset, {gasPrice: gas })
-        .then((res) => {
-            result = res
-        }).catch((e) => {
-            console.log(e)
-            isError = true
-            triggerError(e)
-        })
+    console.log("calling claim")
+    console.log(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS)
+    sendToAnyoneContract = await loadSendToAnyoneContract(web3)
+    // claim contract call directly?
+    result = await sendToAnyoneContract.methods
+            .claim(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS)
+            .send({
+                from: selectedAccount,
+                gasPrice: gas,
+                gas: 250000 ,
+                //TODO: check on this, should work automatically
+                nonce: await web3.eth.getTransactionCount(selectedAccount)
+            })
+
     console.log(result)
     if (result && result.status) {
         document.getElementById('spinnerText').innerHTML = "Confirmed transaction 2 out of 2!"
-        await sleep(3000).then(() => {
+        await sleep(6000).then(() => {
             console.log("Trigger success page")
             document.getElementById('spinner').style.display = 'none';
             triggerSuccess();
@@ -759,10 +760,11 @@ async function checkFunds(_address, _minBalance){
     }, 1000);
 }
 
+// get other idriss to not hit rate limits?
 async function checkRegistry(){
     intervalRegistry = setInterval(async function () {
         spinner = document.getElementById("spinner")
-        res = idriss.resolve(identifier)
+        res = await idriss.resolve(identifier)
         if (res['Public ETH']) {
             spinner.dispatchEvent(Object.assign(new Event('signUpSuccess')));
             clearInterval(intervalRegistry)
