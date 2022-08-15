@@ -646,6 +646,7 @@ async function validate() {
         console.log(String(valid.receiptID))
         // wait until funds arrived => spinner
         document.getElementById("spinner").style.display='';
+        document.getElementById('HeadlineStep2').innerHTML = "Confirm Claiming"
         minBalance = roundUp(valid.gas*(1.1)*320000, 0)
         checkFunds(selectedAccount, minBalance);
         await new Promise(res => {

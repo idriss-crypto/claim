@@ -53,14 +53,14 @@
         </div>
 
         <!-- MAIN CONTENT -->
-
-        <!-- STEP 0 -->
         <div id="all" class="bg-white min-h-full flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+
+            <!-- STEP 0 -->
             <div id="DivStep0" class="max-w-md w-full space-y-8">
                 <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900" id="searchRes">Searching for claimable items..</h2>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900" id="searchRes">Searching for claimable assets...</h2>
                 <div id="spinnerSearch">
-                    <svg class="inline mt-2 w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-[#11dd74]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="m-auto mt-2 w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-[#11dd74]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
                         <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
                     </svg>
@@ -147,15 +147,14 @@
             <!-- STEP 2 - REGISTRATION & CLAIMING -->
             <div id="DivStep2" style="display: none;" class="max-w-md w-full space-y-8">
                 <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Verify Your Identifier</h2>
+                <h2 id="HeadlineStep2" class="mt-6 text-center text-3xl font-extrabold text-gray-900">Verify Your Identifier</h2>
 
-                <div id="identifierTemp" style="display: none;" class="mt-2 sm:mt-0 mb-6 sm:w-60 m-auto">
+                <div id="identifierTemp" style="display: none;" class="mt-2 sm:mt-0 sm:w-60 m-auto">
                     <p class="text-sm text-gray-500 mb-1">Identifier:</p>
-                    <div id="identifierInput" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"></div>
+                    <div id="identifierInput" class="shadow appearance-none border rounded w-full py-1 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline">hello@idriss.xyz</div>
                 </div>
-                <br />
                 <div id="validateDiv" style="display: none;" class="m-auto">
-                    <div id="twitterMsg" class="mt-2" style="display: none;">
+                    <div id="twitterMsg" style="display: none;">
                         <p class="text-sm text-gray-500 mb-2">Tweet the following text with <span id="accountName"></span> to verify yourself.</p>
                         <div id="tweet-wrapper">
                             <div class="border border-gray-300 rounded-md content-center p-1 hover:cursor-pointer" onclick="copyTweet();">
@@ -173,11 +172,11 @@
                         <p id="otpError" class="text-red-500 font-medium hidden mt-1">Wrong OTP.</p>
                     </div>
 
-                    <div onclick="validate();" class="group relative border rounded-md py-3 px-4 flex items-center justify-center text-sm font-medium uppercase hover:bg-gray-50 focus:outline-none sm:flex-1 sm:py-6 bg-white shadow-sm text-gray-900 cursor-pointer">Continue / I have posted</div>
+                    <div onclick="validate();" class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer">Continue</div>
                 </div>
                 <div id="spinner" style="display: none;">
-                    <p id="spinnerText">Sending you some money to pay for the transactions, one moment...</p>
-                    <svg class="inline mt-2 w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-[#11dd74]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <p id="spinnerText" class="mt-4 mb-4 text-center text-sm text-gray-700">Approve the transaction you will see in a few seconds (1 out of 2)</p>
+                    <svg class="m-auto mt-2 w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-[#11dd74]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
                         <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
                     </svg>
@@ -198,7 +197,7 @@
                         <div class="w-full aspect-w-1 aspect-h-1 bg-gray-200 rounded-lg overflow-hidden xl:aspect-w-7 xl:aspect-h-8">
                             <img id="nftIdDone" src="https://lh3.googleusercontent.com/RRappOVtmotZGADmfAUgPaD4_Qlg5yboAffg1dg_BfherhsudhOQouR4cbtXk4muWK4ymLvEfOXYvVxds9nR7DaWjs_2pYOupSiM=w600" alt="" class="w-full h-full object-center object-cover" />
                         </div>
-                        <h3 id="nftNameDone" class="mt-4 text-sm text-gray-700"></h3>
+                        <h3 id="nftNameDone" class="mt-4 text-sm text-gray-700">Limba the formidable by Crypto Coven</h3>
                         <div class="flex items-center justify-between">
                             <div class="flex space-x-1 overflow-hidden mt-1 justify-end">
                                 <a id="openseaLinkDone" href="https://opensea.io/assets/ethereum/0x5180db8f5c931aae63c74266b211f580155ecac8/4344" target="_blank">
@@ -258,6 +257,7 @@
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "none";
                 document.getElementById("DivStep1").style.display = "";
+                document.getElementById("DivStep0").style.display = "none";
                 document.getElementById("DivClaimToken").style.display = "";
                 document.getElementById("DivClaimNFT").style.display = "none";
                 document.getElementById("ButtonTokenNFT").setAttribute("onclick", "toggleNFTFlow()");
@@ -268,6 +268,7 @@
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "none";
                 document.getElementById("DivStep1").style.display = "";
+                document.getElementById("DivStep0").style.display = "none";
                 document.getElementById("DivClaimToken").style.display = "none";
                 document.getElementById("DivClaimNFT").style.display = "";
                 document.getElementById("ButtonTokenNFT").setAttribute("onclick", "toggleTokenFlow()");
@@ -278,6 +279,7 @@
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "";
                 document.getElementById("DivStep1").style.display = "none";
+                document.getElementById("DivStep0").style.display = "none";
                 document.getElementById("DivClaimNFTDone").style.display = "none";
                 document.getElementById("ButtonTokenNFTSuccess").setAttribute("onclick", "toggleNFTFlowSuccess()");
                 document.getElementById("ButtonTokenNFTSuccess").innerHTML = "Toggle success page (NFT)";
@@ -287,6 +289,7 @@
                 document.getElementById("DivStep2").style.display = "none";
                 document.getElementById("DivStep3").style.display = "";
                 document.getElementById("DivStep1").style.display = "none";
+                document.getElementById("DivStep0").style.display = "none";
                 document.getElementById("DivClaimNFTDone").style.display = "";
                 document.getElementById("ButtonTokenNFTSuccess").setAttribute("onclick", "toggleTokenFlowSuccess()");
                 document.getElementById("ButtonTokenNFTSuccess").innerHTML = "Toggle success page (TOKEN)";
