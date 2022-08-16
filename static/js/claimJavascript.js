@@ -410,9 +410,12 @@ document.addEventListener("DOMContentLoaded", async () => {
                     toHash,
                 });
             } else {
-                document.getElementById("spinnerStart").style.display = "none";
+                document.getElementById("spinnerSearch").style.display = "none";
                 document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
             }
+        } if (events.length == 0) {
+            document.getElementById("spinnerSearch").style.display = "none";
+            document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
         }
         console.log(events);
         console.log(paymentsToClaim);
