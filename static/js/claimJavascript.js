@@ -287,7 +287,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     let provider = new Web3.providers.HttpProvider(rpcEndpoint);
     defaultWeb3 = new Web3(provider);
     let params = new URL(document.location).searchParams;
-    identifier = params.get("identifier");
+    identifier = params.get("identifier").replace(" ", "+");
     claimPassword = params.get("claimPassword");
     assetId = params.get("assetId") ?? 0;
     assetType = assetTypes[params.get("assetType")];
@@ -382,7 +382,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                      */
                     // or use ierc721 to fetch token uri
                     const ierc721 = await loadERC721Contract(defaultWeb3Polygon, assetContractAddress);
-                    const tokenURI = await ierc721.methods.tokenURI(assetId).call();
+                    let tokenURI = await ierc721.methods.tokenURI(assetId).call();
+                    tokenURI = translateImageSRC(tokenURI);
                     console.log(tokenURI);
                     await fetch(tokenURI)
                         .then((response) => response.json())
