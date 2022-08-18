@@ -346,7 +346,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
         for (let i = 0; i < events.length; i++) {
             // delete message and assetType => add when smart contract is updated
-            const { toHash, assetContractAddress, amount, from } = events[i].returnValues;
+            const {toHash, assetType, assetContractAddress, amount, from, message} = events[i].returnValues;
             // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
             // assetType is defined on page load
             let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
@@ -355,8 +355,8 @@ document.addEventListener("DOMContentLoaded", async () => {
                 document.getElementById("DivStep0").style.display = "none";
                 document.getElementById("DivStep1").style.display = "";
                 let claimMessageMain;
-                // = message when added above
                 let claimMessageSubtitle = "Welcome to Crypto!";
+                if (message) claimMessageSubtitle = message;
                 if (assetType == 0) {
                     dollarValue = await calculateDollar("polygon", assetContractAddress, claimable);
                     hideNFTPath();
@@ -777,181 +777,610 @@ async function loadPaymentMATIC(web3_) {
 async function loadSendToAnyoneContract(web3_) {
     return await new web3_.eth.Contract(
         [
-            {
-                inputs: [
-                    { internalType: "address", name: "_IDrissAddr", type: "address" },
-                    { internalType: "address", name: "_maticUsdAggregator", type: "address" },
-                ],
-                stateMutability: "nonpayable",
-                type: "constructor",
-            },
-            {
-                anonymous: false,
-                inputs: [
-                    { indexed: true, internalType: "bytes32", name: "toHash", type: "bytes32" },
-                    { indexed: true, internalType: "address", name: "beneficiary", type: "address" },
-                    { indexed: true, internalType: "address", name: "assetContractAddress", type: "address" },
-                    { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-                ],
-                name: "AssetClaimed",
-                type: "event",
-            },
-            {
-                anonymous: false,
-                inputs: [
-                    { indexed: true, internalType: "bytes32", name: "fromHash", type: "bytes32" },
-                    { indexed: true, internalType: "bytes32", name: "toHash", type: "bytes32" },
-                    { indexed: true, internalType: "address", name: "from", type: "address" },
-                    { indexed: false, internalType: "address", name: "assetContractAddress", type: "address" },
-                ],
-                name: "AssetMoved",
-                type: "event",
-            },
-            {
-                anonymous: false,
-                inputs: [
-                    { indexed: true, internalType: "bytes32", name: "toHash", type: "bytes32" },
-                    { indexed: true, internalType: "address", name: "from", type: "address" },
-                    { indexed: true, internalType: "address", name: "assetContractAddress", type: "address" },
-                    { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-                ],
-                name: "AssetTransferReverted",
-                type: "event",
-            },
-            {
-                anonymous: false,
-                inputs: [
-                    { indexed: true, internalType: "bytes32", name: "toHash", type: "bytes32" },
-                    { indexed: true, internalType: "address", name: "from", type: "address" },
-                    { indexed: true, internalType: "address", name: "assetContractAddress", type: "address" },
-                    { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
-                ],
-                name: "AssetTransferred",
-                type: "event",
-            },
-            {
-                anonymous: false,
-                inputs: [
-                    { indexed: true, internalType: "address", name: "previousOwner", type: "address" },
-                    { indexed: true, internalType: "address", name: "newOwner", type: "address" },
-                ],
-                name: "OwnershipTransferred",
-                type: "event",
-            },
-            { inputs: [], name: "IDRISS_ADDR", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "MINIMAL_PAYMENT_FEE", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "MINIMAL_PAYMENT_FEE_DENOMINATOR", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "PAYMENT_FEE_PERCENTAGE", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "PAYMENT_FEE_PERCENTAGE_DENOMINATOR", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "PAYMENT_FEE_SLIPPAGE_PERCENT", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-            {
-                inputs: [
-                    { internalType: "bytes32", name: "_IDrissHash", type: "bytes32" },
-                    { internalType: "enum AssetType", name: "_assetType", type: "uint8" },
-                    { internalType: "address", name: "_assetContractAddress", type: "address" },
-                ],
-                name: "balanceOf",
-                outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
-                stateMutability: "view",
-                type: "function",
-            },
-            {
-                inputs: [
-                    { internalType: "uint256", name: "_minimalPaymentFee", type: "uint256" },
-                    { internalType: "uint256", name: "_paymentFeeDenominator", type: "uint256" },
-                ],
-                name: "changeMinimalPaymentFee",
-                outputs: [],
-                stateMutability: "nonpayable",
-                type: "function",
-            },
-            {
-                inputs: [
-                    { internalType: "uint256", name: "_paymentFeePercentage", type: "uint256" },
-                    { internalType: "uint256", name: "_paymentFeeDenominator", type: "uint256" },
-                ],
-                name: "changePaymentFeePercentage",
-                outputs: [],
-                stateMutability: "nonpayable",
-                type: "function",
-            },
-            {
-                inputs: [
-                    { internalType: "string", name: "_IDrissHash", type: "string" },
-                    { internalType: "string", name: "_claimPassword", type: "string" },
-                    { internalType: "enum AssetType", name: "_assetType", type: "uint8" },
-                    { internalType: "address", name: "_assetContractAddress", type: "address" },
-                ],
-                name: "claim",
-                outputs: [],
-                stateMutability: "nonpayable",
-                type: "function",
-            },
-            { inputs: [], name: "claimPaymentFees", outputs: [], stateMutability: "nonpayable", type: "function" },
-            {
-                inputs: [
-                    { internalType: "string", name: "_IDrissHash", type: "string" },
-                    { internalType: "string", name: "_claimPassword", type: "string" },
-                ],
-                name: "hashIDrissWithPassword",
-                outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
-                stateMutability: "pure",
-                type: "function",
-            },
-            {
-                inputs: [
-                    { internalType: "bytes32", name: "_FromIDrissHash", type: "bytes32" },
-                    { internalType: "bytes32", name: "_ToIDrissHash", type: "bytes32" },
-                    { internalType: "enum AssetType", name: "_assetType", type: "uint8" },
-                    { internalType: "address", name: "_assetContractAddress", type: "address" },
-                ],
-                name: "moveAssetToOtherHash",
-                outputs: [],
-                stateMutability: "nonpayable",
-                type: "function",
-            },
-            {
-                inputs: [
-                    { internalType: "address", name: "", type: "address" },
-                    { internalType: "address", name: "", type: "address" },
-                    { internalType: "uint256", name: "", type: "uint256" },
-                    { internalType: "bytes", name: "", type: "bytes" },
-                ],
-                name: "onERC721Received",
-                outputs: [{ internalType: "bytes4", name: "", type: "bytes4" }],
-                stateMutability: "pure",
-                type: "function",
-            },
-            { inputs: [], name: "owner", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "paymentFeesBalance", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
-            { inputs: [], name: "renounceOwnership", outputs: [], stateMutability: "view", type: "function" },
-            {
-                inputs: [
-                    { internalType: "bytes32", name: "_IDrissHash", type: "bytes32" },
-                    { internalType: "enum AssetType", name: "_assetType", type: "uint8" },
-                    { internalType: "address", name: "_assetContractAddress", type: "address" },
-                ],
-                name: "revertPayment",
-                outputs: [],
-                stateMutability: "nonpayable",
-                type: "function",
-            },
-            {
-                inputs: [
-                    { internalType: "bytes32", name: "_IDrissHash", type: "bytes32" },
-                    { internalType: "uint256", name: "_amount", type: "uint256" },
-                    { internalType: "enum AssetType", name: "_assetType", type: "uint8" },
-                    { internalType: "address", name: "_assetContractAddress", type: "address" },
-                    { internalType: "uint256", name: "_assetId", type: "uint256" },
-                ],
-                name: "sendToAnyone",
-                outputs: [],
-                stateMutability: "payable",
-                type: "function",
-            },
-            { inputs: [{ internalType: "bytes4", name: "interfaceId", type: "bytes4" }], name: "supportsInterface", outputs: [{ internalType: "bool", name: "", type: "bool" }], stateMutability: "pure", type: "function" },
-            { inputs: [{ internalType: "address", name: "newOwner", type: "address" }], name: "transferOwnership", outputs: [], stateMutability: "nonpayable", type: "function" },
-        ],
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "_IDrissAddr",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "_maticUsdAggregator",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "beneficiary",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "AssetClaimed",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "fromHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "AssetMoved",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "AssetTransferReverted",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         },
+         {
+            "indexed": false,
+            "internalType": "string",
+            "name": "message",
+            "type": "string"
+         }
+      ],
+      "name": "AssetTransferred",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+         }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+   },
+   {
+      "inputs": [],
+      "name": "IDRISS_ADDR",
+      "outputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "MINIMAL_PAYMENT_FEE",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "MINIMAL_PAYMENT_FEE_DENOMINATOR",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "PAYMENT_FEE_PERCENTAGE",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "PAYMENT_FEE_PERCENTAGE_DENOMINATOR",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "PAYMENT_FEE_SLIPPAGE_PERCENT",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_IDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "_minimalPaymentFee",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_paymentFeeDenominator",
+            "type": "uint256"
+         }
+      ],
+      "name": "changeMinimalPaymentFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "_paymentFeePercentage",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_paymentFeeDenominator",
+            "type": "uint256"
+         }
+      ],
+      "name": "changePaymentFeePercentage",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "string",
+            "name": "_IDrissHash",
+            "type": "string"
+         },
+         {
+            "internalType": "string",
+            "name": "_claimPassword",
+            "type": "string"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "claim",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "claimPaymentFees",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "_value",
+            "type": "uint256"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "getPaymentFee",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "string",
+            "name": "_IDrissHash",
+            "type": "string"
+         },
+         {
+            "internalType": "string",
+            "name": "_claimPassword",
+            "type": "string"
+         }
+      ],
+      "name": "hashIDrissWithPassword",
+      "outputs": [
+         {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+         }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_FromIDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "bytes32",
+            "name": "_ToIDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "moveAssetToOtherHash",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         },
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         },
+         {
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
+         }
+      ],
+      "name": "onERC721Received",
+      "outputs": [
+         {
+            "internalType": "bytes4",
+            "name": "",
+            "type": "bytes4"
+         }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "paymentFeesBalance",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_IDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "revertPayment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_IDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_assetId",
+            "type": "uint256"
+         },
+         {
+            "internalType": "string",
+            "name": "_message",
+            "type": "string"
+         }
+      ],
+      "name": "sendToAnyone",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes4",
+            "name": "interfaceId",
+            "type": "bytes4"
+         }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+         {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+         }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+         }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   }
+],
         sendToAnyoneContractAddress
     );
 }
