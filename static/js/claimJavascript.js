@@ -1534,6 +1534,7 @@ async function loadContract() {
 
 // Contract to interact with for payment
 let contract;
+let GAS_LIMIT_PAY_NATIVE = 170000;
 
 const MATICOptions = {
     rpcUrl: rpcEndpoint,
@@ -1550,28 +1551,29 @@ let TallyOpts = {
         display: {
             logo: "../static/images/tally.svg",
             name: "Tally",
-            description: "Coming Soon",
+            description: "Connect to your Tally Ho! Wallet",
         },
         package: true,
         connector: async () => {
             if (!isTallyInstalled()) {
-                window.open("https://tally.cash/community-edition", "_blank"); // <-- LOOK HERE
-                throw new Error("Tally not supported yet.");
-            }
-
-            let provider = null;
-            if (typeof window.ethereum !== "undefined") {
-                provider = window.ethereum;
-                try {
-                    await provider.request({ method: "eth_requestAccounts" });
-                } catch (error) {
-                    throw new Error("User Rejected");
+                    window.open("https://tally.cash/community-edition", '_blank'); // <-- LOOK HERE
+                    return;
                 }
-            } else {
-                throw new Error("No Tally Wallet found");
-            }
-            console.log("Tally provider", provider);
-            return provider;
+
+                let provider = null;
+                if (typeof window.ethereum !== 'undefined') {
+
+                    provider = window.ethereum
+                    try {
+                        await provider.request({ method: 'eth_requestAccounts' });
+                    } catch (error) {
+                        throw new Error("User Rejected");
+                    }
+                } else {
+                    throw new Error("No Tally Ho! Wallet found");
+                }
+                console.log("Tally provider", provider);
+                return provider;
         },
     },
 };
@@ -1791,6 +1793,7 @@ async function validate() {
                 from: selectedAccount,
                 value: 0,
                 gasPrice: valid.gas,
+                gas: GAS_LIMIT_PAY_NATIVE
             });
             paid = true;
             document.getElementById("spinnerText").innerHTML = "Validating payment ...";
