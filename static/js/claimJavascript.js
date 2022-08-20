@@ -1421,7 +1421,6 @@ const Web3Modal = window.Web3Modal.default;
 const WalletConnectProvider = window.WalletConnectProvider.default;
 const evmChains = window.evmChains;
 const WalletLink = window.WalletLink;
-const Fortmatic = window.Fortmatic;
 
 const customNodePolygon = {
     rpcUrl: "https://rpc-mainnet.maticvigil.com/",
@@ -1651,25 +1650,10 @@ let WalletLinkOpts = {
     },
 };
 
-let customNetworkOptions = {
-    rpcUrl: rpcEndpoint,
-    chainId: 137,
-};
-
-let providerOptionsFM = {
-    fortmatic: {
-        package: Fortmatic, // required
-        options: {
-            key: "pk_live_05E291BB168EC551", // required
-            network: customNetworkOptions, // if we don't pass it, it will default to localhost:8454
-        },
-    },
-};
 
 const providerOptions = {
     ...WalletConnectOpts,
     ...WalletLinkOpts,
-    ...providerOptionsFM,
 };
 
 if (deviceType() === "desktop") {
