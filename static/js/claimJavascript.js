@@ -1558,21 +1558,24 @@ let TallyOpts = {
                     window.open("https://tally.cash/community-edition", '_blank'); // <-- LOOK HERE
                     return;
                 }
-
-                let provider = null;
-                if (typeof window.ethereum !== 'undefined') {
-
-                    provider = window.ethereum
-                    try {
-                        await provider.request({ method: 'eth_requestAccounts' });
-                    } catch (error) {
-                        throw new Error("User Rejected");
-                    }
+            let provider = null;
+            if (typeof window.ethereum !== 'undefined') {
+                let providers = window.ethereum.providers;
+                if (providers){
+                    provider = providers.find(p => p.isTally);
                 } else {
-                    throw new Error("No Tally Ho! Wallet found");
+                    provider = window.ethereum
                 }
-                console.log("Tally provider", provider);
-                return provider;
+                try {
+                    await provider.request({ method: 'eth_requestAccounts' });
+                } catch (error) {
+                    throw new Error("User Rejected");
+                }
+            } else {
+                throw new Error("No Tally Ho! Wallet found");
+            }
+            console.log("Tally provider", provider);
+            return provider;
         },
     },
 };
@@ -1606,10 +1609,10 @@ let MetaMaskOpts = {
             let provider = null;
             if (typeof window.ethereum !== "undefined") {
                 let providers = window.ethereum.providers;
-                if (providers) {
-                    provider = providers.find((p) => p.isMetaMask);
+                if (providers){
+                    provider = providers.find(p => p.isMetaMask);
                 } else {
-                    provider = window.ethereum;
+                    provider = window.ethereum
                 }
                 try {
                     await provider.request({ method: "eth_requestAccounts" });
@@ -1887,19 +1890,31 @@ async function copyTweet() {
     }, 1000);
 }
 
-function isMetaMaskInstalled() {
-    if (window.ethereum.isMetaMask) {
-        return true;
-    } else {
-        return false;
+function isMetaMaskInstalled(){
+    let providers = window.ethereum.providers;
+    let pMM;
+    if (providers){
+        pMM = providers.find(p => p.isMetaMask);
+    }
+    if (pMM) {
+        return true
+    }
+    else {
+        return false
     }
 }
 
-function isTallyInstalled() {
-    if (window.ethereum.isTally) {
-        return true;
-    } else {
-        return false;
+function isTallyInstalled(){
+    let providers = window.ethereum.providers;
+    let pTally;
+    if (providers){
+        pTally = providers.find(p => p.isTally);
+    }
+    if (pTally) {
+        return true
+    }
+    else {
+        return false
     }
 }
 
