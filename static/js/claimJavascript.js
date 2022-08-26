@@ -1895,6 +1895,8 @@ function isMetaMaskInstalled(){
     let pMM;
     if (providers){
         pMM = providers.find(p => p.isMetaMask);
+    } else if (window.ethereum.isMetaMask) {
+        return true
     }
     if (pMM) {
         return true
