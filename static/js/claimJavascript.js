@@ -283,150 +283,150 @@ switch (ENV) {
         break;
 }
 
-// set default web3 + provider for frontend checks w/o connecting wallet
-let defaultWeb3;
-
-document.addEventListener("DOMContentLoaded", async () => {
-    let provider = new Web3.providers.HttpProvider(rpcEndpoint);
-    defaultWeb3 = new Web3(provider);
-    defaultWeb3Polygon = new Web3(new Web3.providers.HttpProvider(rpcEndpointPolygon));
-    let params = new URL(document.location).searchParams;
-    identifier = params.get("identifier").replace(" ", "+");
-    claimPassword = params.get("claimPassword");
-    assetId = params.get("assetId") ?? 0;
-    assetType = assetTypes[params.get("assetType")];
-    assetAddress = params.get("assetAddress");
-    token = params.get("token");
-    blockNumber = parseInt(params.get("blockNumber"));
-
-    console.log({ identifier, claimPassword });
-    idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
-        web3Provider: provider,
-        sendToAnyoneContractAddress,
-        idrissRegistryContractAddress,
-        priceOracleContractAddress,
-    });
-    const walletType = {
-        network: "evm",
-        coin: "ETH",
-        walletTag: "Public ETH",
-    };
-
-    window.web3 = defaultWeb3Polygon;
-
-    if (identifier && claimPassword) {
-        userHash = await idriss.getHashForIdentifier(identifier, walletType, claimPassword);
-        console.log(`userhash = ${userHash}`);
-        userHashForClaim = await idriss.getUserHash(walletType, identifier);
-        console.log(`userhashForClaim = ${userHashForClaim}`);
-        sendToAnyoneContract = await loadSendToAnyoneContract(window.web3);
-        const currentBlockNumber = await window.web3.eth.getBlockNumber();
-        const promises = [];
-        const events = [];
-        // use blocknumber as defined above
-        // fromBlock: blockNumber - 1
-        // toBlock: blockNumber + 1
-        promises.push(
-            sendToAnyoneContract
-                .getPastEvents("AssetTransferred", {
-                    filter: { toHash: userHash },
-                    fromBlock: blockNumber - 1,
-                    toBlock: blockNumber + 1,
-                }).then((e) => {
-                    if (e.length > 0) {
-                        for (const eKey of e) {
-                            console.log(eKey);
-                            events.push(eKey);
-                        }
-                    }
-                })
-        );
-
-
-        await Promise.all(promises);
-
-        for (let i = 0; i < events.length; i++) {
-            // delete message and assetType => add when smart contract is updated
-            const {toHash, assetType, assetContractAddress, amount, from, message} = events[i].returnValues;
-            // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
-            // assetType is defined on page load
-            let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
-            console.log(claimable);
-            if (claimable > 0) {
-                document.getElementById("DivStep0").style.display = "none";
-                document.getElementById("DivStep1").style.display = "";
-                let claimMessageMain;
-                let claimMessageSubtitle = "Welcome to Crypto!";
-                if (message) claimMessageSubtitle = message;
-                if (assetType == 0) {
-                    dollarValue = await calculateDollar("polygon", assetContractAddress, claimable);
-                    hideNFTPath();
-                    document.getElementById("DivClaimToken").style.display = "";
-                    claimMessageMain = "You have received " + "$" + dollarValue + " in MATIC";
-                    document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
-                    document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
-                } else if (assetType == 1) {
-                    hideNFTPath();
-                    document.getElementById("DivClaimToken").style.display = "";
-                    dollarValue = await calculateDollar("polygon", assetContractAddress, claimable);
-                    const tokenContract = await loadERC20Contract(window.web3, assetContractAddress);
-                    const symbol = await tokenContract.methods.symbol().call();
-                    claimMessageMain = `You have received $${dollarValue} in ${symbol}`;
-                    document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
-                    document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
-                } else {
-                    //TODO: remove hardcode
-                    /* TODO: translate ipfs addresses
-                        ipfs://bafybeie5vf6lyyu2y7fyoztj52y3gsyiuhorfibmfderm5zcaibjrxzkbe/NFT28.png
-                        We need to transfer this format to
-                        https://ipfs.io/ipfs/bafybeie5vf6lyyu2y7fyoztj52y3gsyiuhorfibmfderm5zcaibjrxzkbe/NFT28.png
-                     */
-                    // or use ierc721 to fetch token uri
-                    const ierc721 = await loadERC721Contract(defaultWeb3Polygon, assetContractAddress);
-                    let tokenURI = await ierc721.methods.tokenURI(assetId).call();
-                    tokenURI = translateImageSRC(tokenURI);
-                    console.log(tokenURI);
-                    await fetch(tokenURI)
-                        .then((response) => response.json())
-                        .then((json) => {
-                            claimNFTMain = `${json.name}`;
-                            document.getElementById("nftId").src = translateImageSRC(json.image);
-                            document.getElementById("nftIdDone").src = translateImageSRC(json.image);
-                            console.log("IMAGE");
-                            console.log(json);
-                        });
-                    document.getElementById("nftName").innerHTML = claimNFTMain;
-                    document.getElementById("nftNameDone").innerHTML = claimNFTMain;
-                    document.getElementById("tipMessageNFT").innerHTML = claimMessageSubtitle;
-                    let openseaLink = "https://opensea.io/assets/matic/" + assetContractAddress + "/" + assetId;
-                    document.getElementById("openseaLink").href = openseaLink;
-                    document.getElementById("openseaLinkDone").href = openseaLink;
-                    document.getElementById("DivClaimNFT").style.display = "";
-                }
-                paymentsToClaim.push({
-                    amount,
-                    assetContractAddress,
-                    from,
-                    assetType,
-                    toHash,
-                });
-            } else {
-                document.getElementById("spinnerSearch").style.display = "none";
-                document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
-            }
-        } if (events.length == 0) {
-            document.getElementById("spinnerSearch").style.display = "none";
-            document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
-        }
-        console.log(events);
-        console.log(paymentsToClaim);
-    }
-});
 pubETHTag = "9306eda974cb89b82c0f38ab407f55b6d124159d1fa7779f2e088b2b786573c1";
 
 const regPh = /^(\+\(?\d{1,4}\s?)\)?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}/;
 const regM = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/;
 const regT = /^@[a-zA-Z0-9_]{1,15}$/;
+
+// set default web3 + provider for frontend checks w/o connecting wallet
+let defaultWeb3;
+
+document.addEventListener("DOMContentLoaded", async () => {
+
+    try {
+        let provider = new Web3.providers.HttpProvider(rpcEndpoint);
+        defaultWeb3 = new Web3(provider);
+        defaultWeb3Polygon = new Web3(new Web3.providers.HttpProvider(rpcEndpointPolygon));
+        let params = new URL(document.location).searchParams;
+        identifier = params.get("identifier").replace(" ", "+");
+        claimPassword = params.get("claimPassword");
+        assetId = params.get("assetId") ?? 0;
+        assetType = assetTypes[params.get("assetType")];
+        assetAddress = params.get("assetAddress");
+        token = params.get("token");
+        blockNumber = parseInt(params.get("blockNumber"));
+
+        console.log({ identifier, claimPassword });
+        idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
+            web3Provider: provider,
+            sendToAnyoneContractAddress,
+            idrissRegistryContractAddress,
+            priceOracleContractAddress,
+        });
+        const walletType = {
+            network: "evm",
+            coin: "ETH",
+            walletTag: "Public ETH",
+        };
+
+        window.web3 = defaultWeb3Polygon;
+
+        if (identifier && claimPassword) {
+            userHash = await idriss.getHashForIdentifier(identifier, walletType, claimPassword);
+            console.log(`userhash = ${userHash}`);
+            userHashForClaim = await idriss.getUserHash(walletType, identifier);
+            console.log(`userhashForClaim = ${userHashForClaim}`);
+            sendToAnyoneContract = await loadSendToAnyoneContract(window.web3);
+            const currentBlockNumber = await window.web3.eth.getBlockNumber();
+            const promises = [];
+            const events = [];
+            // use blocknumber as defined above
+            // fromBlock: blockNumber - 1
+            // toBlock: blockNumber + 1
+            promises.push(
+                sendToAnyoneContract
+                    .getPastEvents("AssetTransferred", {
+                        filter: { toHash: userHash },
+                        fromBlock: blockNumber - 1,
+                        toBlock: blockNumber + 1,
+                    }).then((e) => {
+                        if (e.length > 0) {
+                            for (const eKey of e) {
+                                console.log(eKey);
+                                events.push(eKey);
+                            }
+                        }
+                    })
+            );
+
+
+            await Promise.all(promises);
+
+            for (let i = 0; i < events.length; i++) {
+                // delete message and assetType => add when smart contract is updated
+                const {toHash, assetType, assetContractAddress, amount, from, message} = events[i].returnValues;
+                // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
+                // assetType is defined on page load
+                let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
+                console.log(claimable);
+                if (claimable > 0) {
+                    document.getElementById("DivStep0").style.display = "none";
+                    document.getElementById("DivStep1").style.display = "";
+                    let claimMessageMain;
+                    let claimMessageSubtitle = "Welcome to Crypto!";
+                    if (message) claimMessageSubtitle = message;
+                    if (assetType == 0) {
+                        dollarValue = await calculateDollar("polygon", assetContractAddress, claimable);
+                        hideNFTPath();
+                        document.getElementById("DivClaimToken").style.display = "";
+                        claimMessageMain = "You have received " + "$" + dollarValue + " in MATIC";
+                        document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
+                        document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
+                    } else if (assetType == 1) {
+                        hideNFTPath();
+                        document.getElementById("DivClaimToken").style.display = "";
+                        dollarValue = await calculateDollar("polygon", assetContractAddress, claimable);
+                        const tokenContract = await loadERC20Contract(window.web3, assetContractAddress);
+                        const symbol = await tokenContract.methods.symbol().call();
+                        claimMessageMain = `You have received $${dollarValue} in ${symbol}`;
+                        document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
+                        document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
+                    } else {
+                        // or use ierc721 to fetch token uri
+                        const ierc721 = await loadERC721Contract(defaultWeb3Polygon, assetContractAddress);
+                        let tokenURI = await ierc721.methods.tokenURI(assetId).call();
+                        tokenURI = translateImageSRC(tokenURI);
+                        console.log(tokenURI);
+                        await fetch(tokenURI)
+                            .then((response) => response.json())
+                            .then((json) => {
+                                claimNFTMain = `${json.name}`;
+                                document.getElementById("nftId").src = translateImageSRC(json.image);
+                                document.getElementById("nftIdDone").src = translateImageSRC(json.image);
+                            });
+                        document.getElementById("nftName").innerHTML = claimNFTMain;
+                        document.getElementById("nftNameDone").innerHTML = claimNFTMain;
+                        document.getElementById("tipMessageNFT").innerHTML = claimMessageSubtitle;
+                        let openseaLink = "https://opensea.io/assets/matic/" + assetContractAddress + "/" + assetId;
+                        document.getElementById("openseaLink").href = openseaLink;
+                        document.getElementById("openseaLinkDone").href = openseaLink;
+                        document.getElementById("DivClaimNFT").style.display = "";
+                    }
+                    paymentsToClaim.push({
+                        amount,
+                        assetContractAddress,
+                        from,
+                        assetType,
+                        toHash,
+                    });
+                } else {
+                    document.getElementById("spinnerSearch").style.display = "none";
+                    document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
+                }
+            } if (events.length == 0) {
+                document.getElementById("spinnerSearch").style.display = "none";
+                document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
+            }
+            console.log(events);
+            console.log(paymentsToClaim);
+        }
+    } catch{
+        document.getElementById("spinnerSearch").style.display = "none";
+        document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
+    }
+});
+
 
 function translateImageSRC(_uri) {
     if (_uri.startsWith("http")) return _uri;
@@ -774,7 +774,6 @@ async function loadPaymentMATIC(web3_) {
     );
 }
 
-// ToDo: correct the abi to new contract
 async function loadSendToAnyoneContract(web3_) {
     return await new web3_.eth.Contract(
         [
@@ -1403,25 +1402,8 @@ async function digestMessage(message) {
     return hashHex;
 }
 
-// check device type
-function deviceType() {
-    const ua = navigator.userAgent;
-    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-        return "tablet";
-    }
-    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-        return "mobile";
-    }
-    return "desktop";
-}
-
 //NAV BAR
 //Connecting wallet
-//Connecting wallet
-const Web3Modal = window.Web3Modal.default;
-const WalletConnectProvider = window.WalletConnectProvider.default;
-const evmChains = window.evmChains;
-const WalletLink = window.WalletLink;
 
 const customNodePolygon = {
     rpcUrl: "https://rpc-mainnet.maticvigil.com/",
@@ -1433,12 +1415,8 @@ const magic = new Magic("pk_live_75AE254AAEBDCF4B", {
     network: customNodePolygon,
 });
 
-// Web3modal instance
-let web3Modal;
-
 // web3 for chosen wallet
 let web3;
-let fm;
 
 // Address of the selected account
 let account;
@@ -1536,135 +1514,6 @@ async function loadContract() {
 let contract;
 let GAS_LIMIT_PAY_NATIVE = 170000;
 
-const MATICOptions = {
-    rpcUrl: rpcEndpoint,
-    chainId: polygonChainId,
-};
-
-const MATICOptionsTestnet = {
-    rpcUrl: rpcEndpoint,
-    chainId: polygonChainId,
-};
-
-let TallyOpts = {
-    "custom-tally": {
-        display: {
-            logo: "../static/images/tally.svg",
-            name: "Tally",
-            description: "Connect to your Tally Ho! Wallet",
-        },
-        package: true,
-        connector: async () => {
-            if (!isTallyInstalled()) {
-                    window.open("https://tally.cash/community-edition", '_blank'); // <-- LOOK HERE
-                    return;
-                }
-            let provider = null;
-            if (typeof window.ethereum !== 'undefined') {
-                let providers = window.ethereum.providers;
-                if (providers){
-                    provider = providers.find(p => p.isTally);
-                } else {
-                    provider = window.ethereum
-                }
-                try {
-                    await provider.request({ method: 'eth_requestAccounts' });
-                } catch (error) {
-                    throw new Error("User Rejected");
-                }
-            } else {
-                throw new Error("No Tally Ho! Wallet found");
-            }
-            console.log("Tally provider", provider);
-            return provider;
-        },
-    },
-};
-
-let WalletConnectOpts = {
-    walletconnect: {
-        package: WalletConnectProvider,
-        options: {
-            rpc: {
-                137: "https://polygon-rpc.com/",
-            },
-            chainId: 137,
-        },
-    },
-};
-
-let MetaMaskOpts = {
-    "custom-metamask": {
-        display: {
-            logo: "../static/images/metamask-logo.svg",
-            name: "MetaMask",
-            description: "Connect to your MetaMask Wallet",
-        },
-        package: true,
-        connector: async () => {
-            if (!isMetaMaskInstalled()) {
-                window.open("https://metamask.io/download/", "_blank"); // <-- LOOK HERE
-                return;
-            }
-
-            let provider = null;
-            if (typeof window.ethereum !== "undefined") {
-                let providers = window.ethereum.providers;
-                if (providers){
-                    provider = providers.find(p => p.isMetaMask);
-                } else {
-                    provider = window.ethereum
-                }
-                try {
-                    await provider.request({ method: "eth_requestAccounts" });
-                } catch (error) {
-                    throw new Error("User Rejected");
-                }
-            } else {
-                throw new Error("No MetaMask Wallet found");
-            }
-            console.log("MetaMask provider", provider);
-            return provider;
-        },
-    },
-};
-
-let WalletLinkOpts = {
-    "custom-walletlink": {
-        display: {
-            logo: "../static/images/coinbase.svg",
-            name: "Coinbase",
-            description: "Scan with WalletLink to connect",
-        },
-        options: {
-            appName: "IDriss", // Your app name
-            rpc: "https://mainnet.infura.io/v3/9aa3d95b3bc440fa88ea12eaa4456161",
-            chainId: 1,
-        },
-        package: WalletLink,
-        connector: async (_, options) => {
-            const { appName, networkUrl, chainId } = options;
-            const walletLink = new WalletLink({
-                appName,
-            });
-            const provider = walletLink.makeWeb3Provider(networkUrl, chainId);
-            await provider.enable();
-            return provider;
-        },
-    },
-};
-
-
-const providerOptions = {
-    ...WalletConnectOpts,
-    ...WalletLinkOpts,
-};
-
-if (deviceType() === "desktop") {
-    Object.assign(providerOptions, MetaMaskOpts);
-    Object.assign(providerOptions, TallyOpts);
-}
-
 async function init() {
     web3 = new Web3(magic.rpcProvider);
     // let people sign in or up
@@ -1686,165 +1535,180 @@ async function init() {
 // should be triggered automatically based on identifier information.
 // connect wallet first
 async function signUp() {
-    // identifier based on param in url
-    identifierInput = identifier;
-    contractRegistry = await idriss.idrissRegistryContractPromise;
-    let res;
+
     try {
-        console.log(userHashForClaim);
-        res = await contractRegistry.methods.getIDriss(userHashForClaim).call();
-        console.log(res);
-    } catch {
-        console.log("User does not exist");
-    }
-    if (!res) {
-        const result = await IdrissCrypto[validateApiName].CreateOTP("Public ETH", identifierInput, selectedAccount);
-        console.log(result.sessionKey);
-
-        idHash = result.hash;
-        sessionKey = result.sessionKey;
-        document.getElementById("validateDiv").style.display = "";
-
-        if (identifierInput.match(regT)) {
-            twitterId = result.twitterId;
-            document.getElementById("accountName").innerHTML = identifier;
-            showTwitterVerification(result.twitterMsg);
-            console.log(result.twitterMsg);
-        } else {
-            document.getElementById("OTP").style.display = "";
+        // identifier based on param in url
+        identifierInput = identifier;
+        contractRegistry = await idriss.idrissRegistryContractPromise;
+        let res;
+        try {
+            console.log(userHashForClaim);
+            res = await contractRegistry.methods.getIDriss(userHashForClaim).call();
+            console.log(res);
+        } catch {
+            console.log("User does not exist");
         }
-    } else {
-        document.getElementById("validateDivOuter").style.display = "none";
-        // add check if connected wallet is owner of registered IDriss
-        await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId);
+        if (!res) {
+            const result = await IdrissCrypto[validateApiName].CreateOTP("Public ETH", identifierInput, selectedAccount);
+            console.log(result.sessionKey);
+
+            idHash = result.hash;
+            sessionKey = result.sessionKey;
+            document.getElementById("validateDiv").style.display = "";
+
+            if (identifierInput.match(regT)) {
+                twitterId = result.twitterId;
+                document.getElementById("accountName").innerHTML = identifier;
+                showTwitterVerification(result.twitterMsg);
+                console.log(result.twitterMsg);
+            } else {
+                document.getElementById("OTP").style.display = "";
+            }
+        } else {
+            document.getElementById("validateDivOuter").style.display = "none";
+            // add check if connected wallet is owner of registered IDriss
+            await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId);
+        }
+    } catch (e) {
+        triggerError(e);
     }
 }
 
 // check if posted/OTP correct
 async function validate() {
-    console.log("validate called");
-    let valid;
-    // call validateOTP only once?
-    if (ENV !== "local") {
-        // there is no local endpoint so we skip it alltogether
-        if (document.getElementById("OTPInput").value) {
-            try {
-                valid = await IdrissCrypto[validateApiName].ValidateOTP(document.getElementById("OTPInput").value, sessionKey);
-                document.getElementById("otpError").style.display = "none";
-                document.getElementById("validateDivOuter").style.display = "none";
-            } catch {
-                // add case of wrong otp error
-                document.getElementById("otpError").style.display = "block";
-                return;
+
+    try {
+        console.log("validate called");
+        let valid;
+        // call validateOTP only once?
+        if (ENV !== "local") {
+            // there is no local endpoint so we skip it alltogether
+            if (document.getElementById("OTPInput").value) {
+                try {
+                    valid = await IdrissCrypto[validateApiName].ValidateOTP(document.getElementById("OTPInput").value, sessionKey);
+                    document.getElementById("otpError").style.display = "none";
+                    document.getElementById("validateDivOuter").style.display = "none";
+                } catch {
+                    // add case of wrong otp error
+                    document.getElementById("otpError").style.display = "block";
+                    return;
+                }
+            } else {
+                try {
+                    valid = await IdrissCrypto[validateApiName].ValidateOTP("0", sessionKey);
+                    document.getElementById("noTweet-error").style.display = "none";
+                } catch {
+                    // add case of wrong otp error
+                    document.getElementById("noTweet-error").style.display = "block";
+                    return;
+                }
             }
-        } else {
-            try {
-                valid = await IdrissCrypto[validateApiName].ValidateOTP("0", sessionKey);
-                document.getElementById("noTweet-error").style.display = "none";
-            } catch {
-                // add case of wrong otp error
-                document.getElementById("noTweet-error").style.display = "block";
-                return;
-            }
-        }
-        document.getElementById("validateDivOuter").style.display = "none";
-        paymentContract = await loadPaymentMATIC(web3);
-        // create receiptID for verification
-        console.log(String(valid.receiptID));
-        // wait until funds arrived => spinner
-        document.getElementById("spinner").style.display = "";
-        document.getElementById("HeadlineStep2").innerHTML = "Confirm Claiming";
-        minBalance = roundUp(valid.gas * 1.1 * 320000, 0);
-        checkFunds(selectedAccount, minBalance);
-        await new Promise((res) => {
-            spinner = document.getElementById("spinner");
-            spinner.addEventListener("fundsArrived", (e) => {
-                console.log(e);
-                res();
-            });
-        });
-        document.getElementById("spinner").style.display = "none";
-        receipt_hash = await paymentContract.methods.hashReceipt(String(valid.receiptID), selectedAccount).call();
-        // let people pay only once
-        // add "checkPayment" in case paid is true?
-        if (!paid) {
-            // ToDo: error handling everywhere
-            console.log(valid.gas);
-            // faucet gas is sent in ValidateOTP with high gas fee, so should arrive relatively quickly
-            // wallet shows very high gas if no funds are available
-            document.getElementById("spinnerText").innerHTML = "Confirming transaction 1 out of 2 ...";
+            document.getElementById("validateDivOuter").style.display = "none";
+            paymentContract = await loadPaymentMATIC(web3);
+            // create receiptID for verification
+            console.log(String(valid.receiptID));
+            // wait until funds arrived => spinner
             document.getElementById("spinner").style.display = "";
-            await sleep(3000).then(() => {
-                console.log("sleeping done inside");
+            document.getElementById("HeadlineStep2").innerHTML = "Confirm Claiming";
+            minBalance = roundUp(valid.gas * 1.1 * 320000, 0);
+            checkFunds(selectedAccount, minBalance);
+            await new Promise((res) => {
+                spinner = document.getElementById("spinner");
+                spinner.addEventListener("fundsArrived", (e) => {
+                    console.log(e);
+                    res();
+                });
             });
-            await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
-                from: selectedAccount,
-                value: 0,
-                gasPrice: valid.gas,
-                gas: GAS_LIMIT_PAY_NATIVE
+            document.getElementById("spinner").style.display = "none";
+            receipt_hash = await paymentContract.methods.hashReceipt(String(valid.receiptID), selectedAccount).call();
+            // let people pay only once
+            // add "checkPayment" in case paid is true?
+            if (!paid) {
+                // ToDo: error handling everywhere
+                console.log(valid.gas);
+                // faucet gas is sent in ValidateOTP with high gas fee, so should arrive relatively quickly
+                // wallet shows very high gas if no funds are available
+                document.getElementById("spinnerText").innerHTML = "Confirming transaction 1 out of 2 ...";
+                document.getElementById("spinner").style.display = "";
+                await sleep(3000).then(() => {
+                    console.log("sleeping done inside");
+                });
+                await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
+                    from: selectedAccount,
+                    value: 0,
+                    gasPrice: valid.gas,
+                    gas: GAS_LIMIT_PAY_NATIVE
+                });
+                paid = true;
+                document.getElementById("spinnerText").innerHTML = "Validating payment ...";
+            }
+            // if successful creates link on registry
+            checkedPayment = await IdrissCrypto[validateApiName].CheckPayment("MATIC", sessionKey);
+            checkRegistry();
+            await new Promise((res) => {
+                spinner = document.getElementById("spinner");
+                spinner.addEventListener("signUpSuccess", (e) => {
+                    console.log(e);
+                    res();
+                });
             });
-            paid = true;
-            document.getElementById("spinnerText").innerHTML = "Validating payment ...";
+            await sleep(5000).then(() => {
+                console.log("Waiting 5 seconds");
+            });
+            document.getElementById("spinnerText").innerHTML = "Confirming transaction 2 out of 2 ...";
         }
-        // if successful creates link on registry
-        checkedPayment = await IdrissCrypto[validateApiName].CheckPayment("MATIC", sessionKey);
-        checkRegistry();
-        await new Promise((res) => {
-            spinner = document.getElementById("spinner");
-            spinner.addEventListener("signUpSuccess", (e) => {
-                console.log(e);
-                res();
-            });
-        });
-        await sleep(5000).then(() => {
-            console.log("Waiting 5 seconds");
-        });
-        document.getElementById("spinnerText").innerHTML = "Confirming transaction 2 out of 2 ...";
+        console.log("Success sign-up");
+        await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId);
+        console.log("Sucessful claim");
+    } catch (e) {
+        triggerError(e);
     }
-    console.log("Success sign-up");
-    await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId);
-    console.log("Sucessful claim");
 }
 
 async function claim(amount, assetType, assetContractAddress, assetId = 0) {
-    document.getElementById("spinner").style.display = "";
-    document.getElementById("spinnerText").innerHTML = "Confirming transaction 2 out of 2 ...";
-    const asset = {
-        amount,
-        type: assetType,
-        assetContractAddress,
-        assetId,
-    };
-    console.log("inside claim");
+    try {
+        document.getElementById("HeadlineStep2").innerHTML = "Confirm Claiming";
+        document.getElementById("spinner").style.display = "";
+        document.getElementById("spinnerText").innerHTML = "Confirming transaction 2 out of 2 ...";
+        const asset = {
+            amount,
+            type: assetType,
+            assetContractAddress,
+            assetId,
+        };
+        console.log("inside claim");
 
-    await fetch("https://gasstation-mainnet.matic.network/v2")
-        .then((response) => response.json())
-        .then((json) => (gas = String(Math.round(json["fast"]["maxFee"] * 1000000000))));
-    console.log({ userHash, identifier, walletType, asset, gas });
-    let result;
-    let isError = false;
-    console.log("calling claim");
-    console.log(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS);
-    sendToAnyoneContract = await loadSendToAnyoneContract(web3);
-    // claim contract call directly?
-    result = await sendToAnyoneContract.methods.claim(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS).send({
-        from: selectedAccount,
-        gasPrice: gas,
-        gas: 250000,
-        //TODO: check on this, should work automatically
-        nonce: await web3.eth.getTransactionCount(selectedAccount),
-    });
-
-    console.log(result);
-    if (result && result.status) {
-        document.getElementById("spinnerText").innerHTML = "Confirmed transaction 2 out of 2!";
-        await sleep(6000).then(() => {
-            console.log("Trigger success page");
-            document.getElementById("spinner").style.display = "none";
-            triggerSuccess();
+        await fetch("https://gasstation-mainnet.matic.network/v2")
+            .then((response) => response.json())
+            .then((json) => (gas = String(Math.round(json["fast"]["maxFee"] * 1000000000))));
+        console.log({ userHash, identifier, walletType, asset, gas });
+        let result;
+        let isError = false;
+        console.log("calling claim");
+        console.log(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS);
+        sendToAnyoneContract = await loadSendToAnyoneContract(web3);
+        // claim contract call directly?
+        result = await sendToAnyoneContract.methods.claim(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS).send({
+            from: selectedAccount,
+            gasPrice: gas,
+            gas: 250000,
+            //TODO: check on this, should work automatically
+            nonce: await web3.eth.getTransactionCount(selectedAccount),
         });
-    } else if (!isError) {
-        triggerError(result);
+
+        console.log(result);
+        if (result && result.status) {
+            document.getElementById("spinnerText").innerHTML = "Confirmed transaction 2 out of 2!";
+            await sleep(6000).then(() => {
+                console.log("Trigger success page");
+                document.getElementById("spinner").style.display = "none";
+                triggerSuccess();
+            });
+        } else if (!isError) {
+            triggerError(result);
+        }
+    } catch (e) {
+        triggerError(e);
     }
 }
 
@@ -1891,79 +1755,6 @@ async function copyTweet() {
     }, 1000);
 }
 
-function isMetaMaskInstalled(){
-    let providers = window.ethereum.providers;
-    let pMM;
-    if (providers){
-        pMM = providers.find(p => p.isMetaMask);
-    } else if (window.ethereum.isMetaMask) {
-        return true
-    }
-    if (pMM) {
-        return true
-    }
-    else {
-        return false
-    }
-}
-
-function isTallyInstalled(){
-    let providers = window.ethereum.providers;
-    let pTally;
-    if (providers){
-        pTally = providers.find(p => p.isTally);
-    }
-    if (pTally) {
-        return true
-    }
-    else {
-        return false
-    }
-}
-
-// add switch to other chains for other payments
-async function switchtopolygon() {
-    const web3 = new Web3(provider);
-
-    //  rpc method?
-    console.log("Checking chain...");
-    const chainId = await web3.eth.getChainId();
-    console.log(chainId);
-
-    // check if correct chain is connected
-    console.log("Connected to chain ", chainId);
-    const chainIdHex = defaultWeb3.utils.toHex(polygonChainId);
-    if (chainId != polygonChainId) {
-        console.log("Switch to Polygon requested");
-        try {
-            await provider.request({
-                method: "wallet_switchEthereumChain",
-                params: [{ chainId: chainIdHex }],
-            });
-        } catch (switchError) {
-            console.log(switchError);
-            if (switchError.message === "JSON RPC response format is invalid") {
-                throw "network1";
-            }
-            // This error code indicates that the chain has not been added to MetaMask.
-            if (switchError.code === 4902) {
-                try {
-                    await provider.request({
-                        method: "wallet_addEthereumChain",
-                        params: [{ chainId: chainIdHex, chainName: "Matic", rpcUrls: [rpcEndpoint], nativeCurrency: { name: "MATIC", symbol: "MATIC", decimals: 18 } }],
-                    });
-                } catch (addError) {
-                    alert("Please add Polygon network to continue.");
-                }
-            }
-            console.log("Please switch to Polygon network.");
-            // disable continue buttons here
-            token = "MATIC";
-            throw "network";
-        }
-    }
-}
-
 function hideNFTPath() {
     document.getElementById("DivStep2").style.display = "none";
     document.getElementById("DivStep3").style.display = "none";
@@ -1984,13 +1775,24 @@ function triggerSuccess() {
     document.getElementById("DivStep3").style.display = "";
 }
 
-//TODO: Mat, could you please add some eye pleasing CSS to DivError?
+
 function triggerError(e) {
-    document.getElementById("ErrorDescription").innerHTML = JSON.stringify(e);
+    document.getElementById("DivError").value = JSON.stringify(e);
     document.getElementById("DivError").style.display = "";
+    document.getElementById("DivStep0").style.display = "none";
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "none";
     document.getElementById("DivStep3").style.display = "none";
+}
+
+async function triggerDiscord() {
+    await navigator.clipboard.writeText("Claim page error: "+document.getElementById("DivError").value);
+    const url =  'https://discord.gg/VMcJ9uF6u8';
+    window.open(url, '_blank');
+}
+
+function triggerRetry() {
+    location.reload();
 }
 
 // to delete an IDriss:

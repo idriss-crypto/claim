@@ -230,14 +230,22 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- STEP 3 ERROR -->
-        <div id="DivError" style="display: ;" class="max-w-md w-full">
-            <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
-            <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Error</h2>
-            <h3 class="mt-4 text-center text-sm text-gray-700">Details</h3>
-            <h3 id="ErrorDescription" class="mt-4 text-center text-sm text-gray-700"></h3>
+            <!-- STEP 3 ERROR -->
+            <div id="DivError" style="display: none;" class="max-w-md w-full">
+                <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
+                <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900">Oops, something happened!</h2>
+                <h3 class="mt-4 text-center text-sm text-gray-700">Clicking the button below will copy the error message to you clipboard and forward you to our Discord server.</h3>
+                <br>
+                <button type="button" class="m-auto group relative flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer" onclick="triggerDiscord();">
+                    <span>Let us know what happened!</span>
+                </button>
+                <br>
+                <button type="button" class="m-auto group relative w-24 flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-[#11dd74] hover:bg-[#11cc74] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#11dd74] hover:cursor-pointer" onclick="triggerRetry();">
+                    <span>Retry</span>
+                </button>
+            </div>
+
         </div>
 
         <!-- FOOTER -->
@@ -255,6 +263,7 @@
             </div>
         </div>
 
+<!--        ToDo: delete script -->
         <script>
             document.getElementById("DivError").style.display = "none";
             function showOtherAssets() {
@@ -325,5 +334,7 @@
         <script type="text/javascript" src="../static/js/claimJavascript.js"></script>
         <script src="https://unpkg.com/idriss-crypto/lib/bundle/global.js"></script>
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+
+
     </body>
 </html>
