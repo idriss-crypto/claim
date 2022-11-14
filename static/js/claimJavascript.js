@@ -525,7 +525,7 @@ async function validate() {
                     gas: GAS_LIMIT_PAY_NATIVE
                 });
                 paid = true;
-                document.getElementById("spinnerText").innerHTML = "Validating payment ...";
+                document.getElementById("spinnerText").innerHTML = "Validating transaction...";
             }
             // if successful creates link on registry
             checkedPayment = await IdrissCrypto[validateApiName].CheckPayment("MATIC", sessionKey);
