@@ -96,7 +96,125 @@ if (ENV === "production") {
 }
 
 async function loadOracle(network, assetContract) {
-    let abiOracle = window.oracleAbi;
+    let abiOracle = [
+        {
+            inputs: [
+                { internalType: "address", name: "_aggregator", type: "address" },
+                { internalType: "address", name: "_accessController", type: "address" },
+            ],
+            stateMutability: "nonpayable",
+            type: "constructor",
+        },
+        {
+            anonymous: false,
+            inputs: [
+                { indexed: true, internalType: "int256", name: "current", type: "int256" },
+                { indexed: true, internalType: "uint256", name: "roundId", type: "uint256" },
+                { indexed: false, internalType: "uint256", name: "updatedAt", type: "uint256" },
+            ],
+            name: "AnswerUpdated",
+            type: "event",
+        },
+        {
+            anonymous: false,
+            inputs: [
+                { indexed: true, internalType: "uint256", name: "roundId", type: "uint256" },
+                { indexed: true, internalType: "address", name: "startedBy", type: "address" },
+                { indexed: false, internalType: "uint256", name: "startedAt", type: "uint256" },
+            ],
+            name: "NewRound",
+            type: "event",
+        },
+        {
+            anonymous: false,
+            inputs: [
+                { indexed: true, internalType: "address", name: "from", type: "address" },
+                { indexed: true, internalType: "address", name: "to", type: "address" },
+            ],
+            name: "OwnershipTransferRequested",
+            type: "event",
+        },
+        {
+            anonymous: false,
+            inputs: [
+                { indexed: true, internalType: "address", name: "from", type: "address" },
+                { indexed: true, internalType: "address", name: "to", type: "address" },
+            ],
+            name: "OwnershipTransferred",
+            type: "event",
+        },
+        { inputs: [], name: "acceptOwnership", outputs: [], stateMutability: "nonpayable", type: "function" },
+        { inputs: [], name: "accessController", outputs: [{ internalType: "contractAccessControllerInterface", name: "", type: "address" }], stateMutability: "view", type: "function" },
+        { inputs: [], name: "aggregator", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+        { inputs: [{ internalType: "address", name: "_aggregator", type: "address" }], name: "confirmAggregator", outputs: [], stateMutability: "nonpayable", type: "function" },
+        { inputs: [], name: "decimals", outputs: [{ internalType: "uint8", name: "", type: "uint8" }], stateMutability: "view", type: "function" },
+        { inputs: [], name: "description", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+        { inputs: [{ internalType: "uint256", name: "_roundId", type: "uint256" }], name: "getAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" },
+        {
+            inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+            name: "getRoundData",
+            outputs: [
+                { internalType: "uint80", name: "roundId", type: "uint80" },
+                { internalType: "int256", name: "answer", type: "int256" },
+                { internalType: "uint256", name: "startedAt", type: "uint256" },
+                { internalType: "uint256", name: "updatedAt", type: "uint256" },
+                { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+            ],
+            stateMutability: "view",
+            type: "function",
+        },
+        { inputs: [{ internalType: "uint256", name: "_roundId", type: "uint256" }], name: "getTimestamp", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+        { inputs: [], name: "latestAnswer", outputs: [{ internalType: "int256", name: "", type: "int256" }], stateMutability: "view", type: "function" },
+        { inputs: [], name: "latestRound", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+        {
+            inputs: [],
+            name: "latestRoundData",
+            outputs: [
+                { internalType: "uint80", name: "roundId", type: "uint80" },
+                { internalType: "int256", name: "answer", type: "int256" },
+                { internalType: "uint256", name: "startedAt", type: "uint256" },
+                { internalType: "uint256", name: "updatedAt", type: "uint256" },
+                { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+            ],
+            stateMutability: "view",
+            type: "function",
+        },
+        { inputs: [], name: "latestTimestamp", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+        { inputs: [], name: "owner", outputs: [{ internalType: "addresspayable", name: "", type: "address" }], stateMutability: "view", type: "function" },
+        { inputs: [{ internalType: "uint16", name: "", type: "uint16" }], name: "phaseAggregators", outputs: [{ internalType: "contractAggregatorV2V3Interface", name: "", type: "address" }], stateMutability: "view", type: "function" },
+        { inputs: [], name: "phaseId", outputs: [{ internalType: "uint16", name: "", type: "uint16" }], stateMutability: "view", type: "function" },
+        { inputs: [{ internalType: "address", name: "_aggregator", type: "address" }], name: "proposeAggregator", outputs: [], stateMutability: "nonpayable", type: "function" },
+        { inputs: [], name: "proposedAggregator", outputs: [{ internalType: "contractAggregatorV2V3Interface", name: "", type: "address" }], stateMutability: "view", type: "function" },
+        {
+            inputs: [{ internalType: "uint80", name: "_roundId", type: "uint80" }],
+            name: "proposedGetRoundData",
+            outputs: [
+                { internalType: "uint80", name: "roundId", type: "uint80" },
+                { internalType: "int256", name: "answer", type: "int256" },
+                { internalType: "uint256", name: "startedAt", type: "uint256" },
+                { internalType: "uint256", name: "updatedAt", type: "uint256" },
+                { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+            ],
+            stateMutability: "view",
+            type: "function",
+        },
+        {
+            inputs: [],
+            name: "proposedLatestRoundData",
+            outputs: [
+                { internalType: "uint80", name: "roundId", type: "uint80" },
+                { internalType: "int256", name: "answer", type: "int256" },
+                { internalType: "uint256", name: "startedAt", type: "uint256" },
+                { internalType: "uint256", name: "updatedAt", type: "uint256" },
+                { internalType: "uint80", name: "answeredInRound", type: "uint80" },
+            ],
+            stateMutability: "view",
+            type: "function",
+        },
+        { inputs: [{ internalType: "address", name: "_accessController", type: "address" }], name: "setController", outputs: [], stateMutability: "nonpayable", type: "function" },
+        { inputs: [{ internalType: "address", name: "_to", type: "address" }], name: "transferOwnership", outputs: [], stateMutability: "nonpayable", type: "function" },
+        { inputs: [], name: "version", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+    ];
     return await new defaultWeb3Polygon.eth.Contract(abiOracle, oracleAddress[network][assetContract][0]);
 }
 
@@ -138,9 +256,9 @@ switch (ENV) {
         loadPaymentMaticContractAddress = "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814";
         polygonChainId = 1337;
         rpcEndpoint = "http://localhost:8545";
-        sendToAnyoneContractAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
-        idrissRegistryContractAddress = "0xe7f1725E7734CE288F8367e1Bb143E90bb3F0512";
-        priceOracleContractAddress = "0x5FbDB2315678afecb367f032d93F642f64180aa3";
+        sendToAnyoneContractAddress = "0x9f62EE65a8395824Ee0821eF2Dc4C947a23F0f25";
+        idrissRegistryContractAddress = "0xA3307BF348ACC4bEDdd67CCA2f7F0c4349d347Db";
+        priceOracleContractAddress = "0x9fE46736679d2D9a65F0992F2272dE9f3c7fa6e0";
         rpcEndpointPolygon = "http://localhost:8545";
         break;
     //Mumbai
@@ -188,6 +306,16 @@ document.addEventListener("DOMContentLoaded", async () => {
         assetAddress = params.get("assetAddress");
         token = params.get("token");
         blockNumber = parseInt(params.get("blockNumber"));
+        let regxP = /^(\+\(?\d{1,4}\s?)\)?\-?\.?\s?\(?\d{3}\)?[\s.-]?\d{3}[\s.-]?\d{4}$/;
+        let regxT = /^@[a-zA-Z0-9_]{1,15}$/;
+
+        if (regxP.test(identifier)) {
+            document.getElementById('identifier').innerHTML = "Phone Number"
+        } else if (regxT.test(identifier)) {
+            document.getElementById('identifier').innerHTML = "Twitter Username"
+        } else {
+            document.getElementById('identifier').innerHTML = "Email"
+        }
 
         console.log({ identifier, claimPassword });
         idriss = new IdrissCrypto.IdrissCrypto(rpcEndpoint, {
@@ -240,8 +368,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const {toHash, assetType, assetContractAddress, amount, from, message} = events[i].returnValues;
                 // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
                 // assetType is defined on page load
-                //TODO: change in event to get assetId there
-                let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress, assetId).call();
+                let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress).call();
                 console.log(claimable);
                 if (claimable > 0) {
                     document.getElementById("DivStep0").style.display = "none";
@@ -266,30 +393,17 @@ document.addEventListener("DOMContentLoaded", async () => {
                         document.getElementById("welcomeMessageToken").innerHTML = claimMessageMain;
                         document.getElementById("tipMessageToken").innerHTML = claimMessageSubtitle;
                     } else {
-                        console.log("Getting NFT data")
-                        let tokenURI = ''
-                        if (assetType == 2) {
-                            const ierc721 = await loadERC721Contract(defaultWeb3Polygon, assetContractAddress);
-                            tokenURI = await ierc721.methods.tokenURI(assetId).call();
-                        } else {
-                            const ierc1155 = await loadERC1155Contract(defaultWeb3Polygon, assetContractAddress);
-                            tokenURI = await ierc1155.methods.uri(assetId).call();
-                        }
-
-                        tokenURI = translateImageSRC(tokenURI.replace('{id}', assetId));
+                        // or use ierc721 to fetch token uri
+                        const ierc721 = await loadERC721Contract(defaultWeb3Polygon, assetContractAddress);
+                        let tokenURI = await ierc721.methods.tokenURI(assetId).call();
+                        tokenURI = translateImageSRC(tokenURI);
                         console.log(tokenURI);
                         await fetch(tokenURI)
                             .then((response) => response.json())
                             .then((json) => {
                                 claimNFTMain = `${json.name}`;
-                                let image
-                                if (json.avatar) {
-                                    image = json.avatar
-                                } else {
-                                    image = json.image
-                                }
-                                document.getElementById("nftId").src = translateImageSRC(image);
-                                document.getElementById("nftIdDone").src = translateImageSRC(image);
+                                document.getElementById("nftId").src = translateImageSRC(json.image);
+                                document.getElementById("nftIdDone").src = translateImageSRC(json.image);
                             });
                         document.getElementById("nftName").innerHTML = claimNFTMain;
                         document.getElementById("nftNameDone").innerHTML = claimNFTMain;
@@ -335,19 +449,955 @@ async function loadERC1155Contract(web3_, contractAddress_) {
 }
 
 async function loadERC721Contract(web3_, contractAddress_) {
-    return await new web3_.eth.Contract( window.erc721Abi, contractAddress_ );
+    return await new web3_.eth.Contract(
+        [
+            {
+                inputs: [
+                    { internalType: "string", name: "name_", type: "string" },
+                    { internalType: "string", name: "symbol_", type: "string" },
+                ],
+                stateMutability: "nonpayable",
+                type: "constructor",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "owner", type: "address" },
+                    { indexed: true, internalType: "address", name: "approved", type: "address" },
+                    { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256" },
+                ],
+                name: "Approval",
+                type: "event",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "owner", type: "address" },
+                    { indexed: true, internalType: "address", name: "operator", type: "address" },
+                    { indexed: false, internalType: "bool", name: "approved", type: "bool" },
+                ],
+                name: "ApprovalForAll",
+                type: "event",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "from", type: "address" },
+                    { indexed: true, internalType: "address", name: "to", type: "address" },
+                    { indexed: true, internalType: "uint256", name: "tokenId", type: "uint256" },
+                ],
+                name: "Transfer",
+                type: "event",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "to", type: "address" },
+                    { internalType: "uint256", name: "tokenId", type: "uint256" },
+                ],
+                name: "approve",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            { inputs: [{ internalType: "address", name: "owner", type: "address" }], name: "balanceOf", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }], name: "getApproved", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            {
+                inputs: [
+                    { internalType: "address", name: "owner", type: "address" },
+                    { internalType: "address", name: "operator", type: "address" },
+                ],
+                name: "isApprovedForAll",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "view",
+                type: "function",
+            },
+            { inputs: [], name: "name", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }], name: "ownerOf", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            {
+                inputs: [
+                    { internalType: "address", name: "from", type: "address" },
+                    { internalType: "address", name: "to", type: "address" },
+                    { internalType: "uint256", name: "tokenId", type: "uint256" },
+                ],
+                name: "safeTransferFrom",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "from", type: "address" },
+                    { internalType: "address", name: "to", type: "address" },
+                    { internalType: "uint256", name: "tokenId", type: "uint256" },
+                    { internalType: "bytes", name: "data", type: "bytes" },
+                ],
+                name: "safeTransferFrom",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "operator", type: "address" },
+                    { internalType: "bool", name: "approved", type: "bool" },
+                ],
+                name: "setApprovalForAll",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            { inputs: [{ internalType: "bytes4", name: "interfaceId", type: "bytes4" }], name: "supportsInterface", outputs: [{ internalType: "bool", name: "", type: "bool" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "symbol", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "uint256", name: "tokenId", type: "uint256" }], name: "tokenURI", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            {
+                inputs: [
+                    { internalType: "address", name: "from", type: "address" },
+                    { internalType: "address", name: "to", type: "address" },
+                    { internalType: "uint256", name: "tokenId", type: "uint256" },
+                ],
+                name: "transferFrom",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+        ],
+        contractAddress_
+    );
 }
 
 async function loadERC20Contract(web3_, contractAddress_) {
-    return await new web3_.eth.Contract( window.erc20Abi, contractAddress_ );
+    return await new web3_.eth.Contract(
+        [
+            {
+                inputs: [
+                    { internalType: "string", name: "name_", type: "string" },
+                    { internalType: "string", name: "symbol_", type: "string" },
+                ],
+                stateMutability: "nonpayable",
+                type: "constructor",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "owner", type: "address" },
+                    { indexed: true, internalType: "address", name: "spender", type: "address" },
+                    { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+                ],
+                name: "Approval",
+                type: "event",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "from", type: "address" },
+                    { indexed: true, internalType: "address", name: "to", type: "address" },
+                    { indexed: false, internalType: "uint256", name: "value", type: "uint256" },
+                ],
+                name: "Transfer",
+                type: "event",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "owner", type: "address" },
+                    { internalType: "address", name: "spender", type: "address" },
+                ],
+                name: "allowance",
+                outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+                stateMutability: "view",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "spender", type: "address" },
+                    { internalType: "uint256", name: "amount", type: "uint256" },
+                ],
+                name: "approve",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            { inputs: [{ internalType: "address", name: "account", type: "address" }], name: "balanceOf", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "decimals", outputs: [{ internalType: "uint8", name: "", type: "uint8" }], stateMutability: "view", type: "function" },
+            {
+                inputs: [
+                    { internalType: "address", name: "spender", type: "address" },
+                    { internalType: "uint256", name: "subtractedValue", type: "uint256" },
+                ],
+                name: "decreaseAllowance",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "spender", type: "address" },
+                    { internalType: "uint256", name: "addedValue", type: "uint256" },
+                ],
+                name: "increaseAllowance",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            { inputs: [], name: "name", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "symbol", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "totalSupply", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            {
+                inputs: [
+                    { internalType: "address", name: "to", type: "address" },
+                    { internalType: "uint256", name: "amount", type: "uint256" },
+                ],
+                name: "transfer",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "from", type: "address" },
+                    { internalType: "address", name: "to", type: "address" },
+                    { internalType: "uint256", name: "amount", type: "uint256" },
+                ],
+                name: "transferFrom",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+        ],
+        contractAddress_
+    );
 }
 
 async function loadPaymentMATIC(web3_) {
-    return await new web3_.eth.Contract( window.paymentAbi, loadPaymentMaticContractAddress );
+    return await new web3_.eth.Contract(
+        [
+            { inputs: [], stateMutability: "nonpayable", type: "constructor" },
+            { anonymous: false, inputs: [{ indexed: true, internalType: "address", name: "admin", type: "address" }], name: "AdminAdded", type: "event" },
+            { anonymous: false, inputs: [{ indexed: true, internalType: "address", name: "admin", type: "address" }], name: "AdminDeleted", type: "event" },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: false, internalType: "string", name: "delegateHandle", type: "string" },
+                    { indexed: true, internalType: "address", name: "delegateAddress", type: "address" },
+                ],
+                name: "DelegateAdded",
+                type: "event",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: false, internalType: "string", name: "delegateHandle", type: "string" },
+                    { indexed: true, internalType: "address", name: "delegateAddress", type: "address" },
+                ],
+                name: "DelegateDeleted",
+                type: "event",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "previousOwner", type: "address" },
+                    { indexed: true, internalType: "address", name: "newOwner", type: "address" },
+                ],
+                name: "OwnershipTransferred",
+                type: "event",
+            },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "payer", type: "address" },
+                    { indexed: false, internalType: "uint256", name: "amount", type: "uint256" },
+                    { indexed: false, internalType: "bytes32", name: "paymentId_hash", type: "bytes32" },
+                    { indexed: true, internalType: "string", name: "IDrissHash", type: "string" },
+                    { indexed: false, internalType: "uint256", name: "date", type: "uint256" },
+                ],
+                name: "PaymentDone",
+                type: "event",
+            },
+            { inputs: [{ internalType: "string", name: "", type: "string" }], name: "IDrissHashes", outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "address", name: "adminAddress", type: "address" }], name: "addAdmin", outputs: [], stateMutability: "nonpayable", type: "function" },
+            {
+                inputs: [
+                    { internalType: "address", name: "delegateAddress", type: "address" },
+                    { internalType: "string", name: "delegateHandle", type: "string" },
+                ],
+                name: "addDelegate",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "address", name: "delegateAddress", type: "address" },
+                    { internalType: "string", name: "delegateHandle", type: "string" },
+                    { internalType: "uint256", name: "percentage", type: "uint256" },
+                ],
+                name: "addDelegateException",
+                outputs: [],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+            { inputs: [{ internalType: "bytes32", name: "", type: "bytes32" }], name: "amounts", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "address", name: "", type: "address" }], name: "balanceOf", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "contractOwner", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "string", name: "", type: "string" }], name: "delegate", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "address", name: "adminAddress", type: "address" }], name: "deleteAdmin", outputs: [], stateMutability: "nonpayable", type: "function" },
+            { inputs: [{ internalType: "string", name: "delegateHandle", type: "string" }], name: "deleteDelegate", outputs: [], stateMutability: "nonpayable", type: "function" },
+            {
+                inputs: [
+                    { internalType: "string", name: "receiptId", type: "string" },
+                    { internalType: "address", name: "paymAddr", type: "address" },
+                ],
+                name: "hashReceipt",
+                outputs: [{ internalType: "bytes32", name: "", type: "bytes32" }],
+                stateMutability: "pure",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "bytes32", name: "paymentId_hash", type: "bytes32" },
+                    { internalType: "string", name: "IDrissHash", type: "string" },
+                    { internalType: "string", name: "delegateHandle", type: "string" },
+                ],
+                name: "payNative",
+                outputs: [],
+                stateMutability: "payable",
+                type: "function",
+            },
+            { inputs: [{ internalType: "bytes32", name: "", type: "bytes32" }], name: "receipts", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "address", name: "newOwner", type: "address" }], name: "transferContractOwnership", outputs: [], stateMutability: "payable", type: "function" },
+            {
+                inputs: [
+                    { internalType: "string", name: "receiptId", type: "string" },
+                    { internalType: "address", name: "paymAddr", type: "address" },
+                ],
+                name: "verifyReceipt",
+                outputs: [{ internalType: "bool", name: "", type: "bool" }],
+                stateMutability: "view",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "uint256", name: "amount", type: "uint256" },
+                    { internalType: "string", name: "delegateHandle", type: "string" },
+                ],
+                name: "withdraw",
+                outputs: [{ internalType: "bytes", name: "", type: "bytes" }],
+                stateMutability: "nonpayable",
+                type: "function",
+            },
+        ],
+        loadPaymentMaticContractAddress
+    );
 }
 
 async function loadSendToAnyoneContract(web3_) {
-    return await new web3_.eth.Contract( window.sendToAnyoneAbi, sendToAnyoneContractAddress );
+    return await new web3_.eth.Contract(
+        [
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "_IDrissAddr",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "_maticUsdAggregator",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "nonpayable",
+      "type": "constructor"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "beneficiary",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "AssetClaimed",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "fromHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "AssetMoved",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "AssetTransferReverted",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "toHash",
+            "type": "bytes32"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "from",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "assetContractAddress",
+            "type": "address"
+         },
+         {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "amount",
+            "type": "uint256"
+         },
+         {
+            "indexed": false,
+            "internalType": "enum AssetType",
+            "name": "assetType",
+            "type": "uint8"
+         },
+         {
+            "indexed": false,
+            "internalType": "string",
+            "name": "message",
+            "type": "string"
+         }
+      ],
+      "name": "AssetTransferred",
+      "type": "event"
+   },
+   {
+      "anonymous": false,
+      "inputs": [
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "previousOwner",
+            "type": "address"
+         },
+         {
+            "indexed": true,
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+         }
+      ],
+      "name": "OwnershipTransferred",
+      "type": "event"
+   },
+   {
+      "inputs": [],
+      "name": "IDRISS_ADDR",
+      "outputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "MINIMAL_PAYMENT_FEE",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "MINIMAL_PAYMENT_FEE_DENOMINATOR",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "PAYMENT_FEE_PERCENTAGE",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "PAYMENT_FEE_PERCENTAGE_DENOMINATOR",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "PAYMENT_FEE_SLIPPAGE_PERCENT",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_IDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "balanceOf",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "_minimalPaymentFee",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_paymentFeeDenominator",
+            "type": "uint256"
+         }
+      ],
+      "name": "changeMinimalPaymentFee",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "_paymentFeePercentage",
+            "type": "uint256"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_paymentFeeDenominator",
+            "type": "uint256"
+         }
+      ],
+      "name": "changePaymentFeePercentage",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "string",
+            "name": "_IDrissHash",
+            "type": "string"
+         },
+         {
+            "internalType": "string",
+            "name": "_claimPassword",
+            "type": "string"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "claim",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "claimPaymentFees",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "uint256",
+            "name": "_value",
+            "type": "uint256"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         }
+      ],
+      "name": "getPaymentFee",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "string",
+            "name": "_IDrissHash",
+            "type": "string"
+         },
+         {
+            "internalType": "string",
+            "name": "_claimPassword",
+            "type": "string"
+         }
+      ],
+      "name": "hashIDrissWithPassword",
+      "outputs": [
+         {
+            "internalType": "bytes32",
+            "name": "",
+            "type": "bytes32"
+         }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_FromIDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "bytes32",
+            "name": "_ToIDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "moveAssetToOtherHash",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         },
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         },
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         },
+         {
+            "internalType": "bytes",
+            "name": "",
+            "type": "bytes"
+         }
+      ],
+      "name": "onERC721Received",
+      "outputs": [
+         {
+            "internalType": "bytes4",
+            "name": "",
+            "type": "bytes4"
+         }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "owner",
+      "outputs": [
+         {
+            "internalType": "address",
+            "name": "",
+            "type": "address"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "paymentFeesBalance",
+      "outputs": [
+         {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+         }
+      ],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [],
+      "name": "renounceOwnership",
+      "outputs": [],
+      "stateMutability": "view",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_IDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         }
+      ],
+      "name": "revertPayment",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes32",
+            "name": "_IDrissHash",
+            "type": "bytes32"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_amount",
+            "type": "uint256"
+         },
+         {
+            "internalType": "enum AssetType",
+            "name": "_assetType",
+            "type": "uint8"
+         },
+         {
+            "internalType": "address",
+            "name": "_assetContractAddress",
+            "type": "address"
+         },
+         {
+            "internalType": "uint256",
+            "name": "_assetId",
+            "type": "uint256"
+         },
+         {
+            "internalType": "string",
+            "name": "_message",
+            "type": "string"
+         }
+      ],
+      "name": "sendToAnyone",
+      "outputs": [],
+      "stateMutability": "payable",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "bytes4",
+            "name": "interfaceId",
+            "type": "bytes4"
+         }
+      ],
+      "name": "supportsInterface",
+      "outputs": [
+         {
+            "internalType": "bool",
+            "name": "",
+            "type": "bool"
+         }
+      ],
+      "stateMutability": "pure",
+      "type": "function"
+   },
+   {
+      "inputs": [
+         {
+            "internalType": "address",
+            "name": "newOwner",
+            "type": "address"
+         }
+      ],
+      "name": "transferOwnership",
+      "outputs": [],
+      "stateMutability": "nonpayable",
+      "type": "function"
+   }
+],
+        sendToAnyoneContractAddress
+    );
 }
 
 function lowerFirst(string_) {
@@ -391,8 +1441,88 @@ let paid;
 let zerionLink;
 
 // Load our smart contract
-async function loadRegistryContract() {
-    return await new defaultWeb3.eth.Contract( window.registryAbi, "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814" );
+async function loadContract() {
+    return await new defaultWeb3.eth.Contract(
+        [
+            { anonymous: false, inputs: [{ indexed: true, internalType: "address", name: "admin", type: "address" }], name: "AdminAdded", type: "event" },
+            { anonymous: false, inputs: [{ indexed: true, internalType: "address", name: "admin", type: "address" }], name: "AdminDeleted", type: "event" },
+            { anonymous: false, inputs: [{ indexed: false, internalType: "uint256", name: "value", type: "uint256" }], name: "Decrement", type: "event" },
+            { anonymous: false, inputs: [{ indexed: true, internalType: "string", name: "hash", type: "string" }], name: "IDrissAdded", type: "event" },
+            { anonymous: false, inputs: [{ indexed: true, internalType: "string", name: "hash", type: "string" }], name: "IDrissDeleted", type: "event" },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "previousIDrissOwner", type: "address" },
+                    { indexed: true, internalType: "address", name: "newIDrissOwner", type: "address" },
+                ],
+                name: "IDrissOwnershipTransferred",
+                type: "event",
+            },
+            { anonymous: false, inputs: [{ indexed: false, internalType: "uint256", name: "value", type: "uint256" }], name: "Increment", type: "event" },
+            { anonymous: false, inputs: [{ indexed: false, internalType: "uint256", name: "price", type: "uint256" }], name: "NewPrice", type: "event" },
+            {
+                anonymous: false,
+                inputs: [
+                    { indexed: true, internalType: "address", name: "previousOwner", type: "address" },
+                    { indexed: true, internalType: "address", name: "newOwner", type: "address" },
+                ],
+                name: "OwnershipTransferred",
+                type: "event",
+            },
+            { inputs: [{ internalType: "string", name: "", type: "string" }], name: "IDrissOwners", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "address", name: "adminAddress", type: "address" }], name: "addAdmin", outputs: [], stateMutability: "nonpayable", type: "function" },
+            {
+                inputs: [
+                    { internalType: "string", name: "hashPub", type: "string" },
+                    { internalType: "string", name: "hashID", type: "string" },
+                    { internalType: "string", name: "address_", type: "string" },
+                    { internalType: "address", name: "ownerAddress", type: "address" },
+                ],
+                name: "addIDriss",
+                outputs: [],
+                stateMutability: "payable",
+                type: "function",
+            },
+            {
+                inputs: [
+                    { internalType: "string", name: "hashPub", type: "string" },
+                    { internalType: "string", name: "hashID", type: "string" },
+                    { internalType: "string", name: "address_", type: "string" },
+                    { internalType: "address", name: "token", type: "address" },
+                    { internalType: "uint256", name: "amount", type: "uint256" },
+                    { internalType: "address", name: "ownerAddress", type: "address" },
+                ],
+                name: "addIDrissToken",
+                outputs: [],
+                stateMutability: "payable",
+                type: "function",
+            },
+            { inputs: [], name: "contractOwner", outputs: [{ internalType: "address", name: "", type: "address" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "countAdding", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "countDeleting", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "creationTime", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "address", name: "adminAddress", type: "address" }], name: "deleteAdmin", outputs: [], stateMutability: "nonpayable", type: "function" },
+            { inputs: [{ internalType: "string", name: "hashPub", type: "string" }], name: "deleteIDriss", outputs: [], stateMutability: "payable", type: "function" },
+            { inputs: [{ internalType: "string", name: "hashPub", type: "string" }], name: "getIDriss", outputs: [{ internalType: "string", name: "", type: "string" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "string", name: "", type: "string" }], name: "payDates", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [], name: "price", outputs: [{ internalType: "uint256", name: "", type: "uint256" }], stateMutability: "view", type: "function" },
+            { inputs: [{ internalType: "uint256", name: "newPrice", type: "uint256" }], name: "setPrice", outputs: [], stateMutability: "nonpayable", type: "function" },
+            { inputs: [{ internalType: "address", name: "newOwner", type: "address" }], name: "transferContractOwnership", outputs: [], stateMutability: "payable", type: "function" },
+            {
+                inputs: [
+                    { internalType: "string", name: "hashPub", type: "string" },
+                    { internalType: "address", name: "newOwner", type: "address" },
+                ],
+                name: "transferIDrissOwnership",
+                outputs: [],
+                stateMutability: "payable",
+                type: "function",
+            },
+            { inputs: [], name: "withdraw", outputs: [{ internalType: "bytes", name: "", type: "bytes" }], stateMutability: "nonpayable", type: "function" },
+            { inputs: [{ internalType: "address", name: "tokenContract", type: "address" }], name: "withdrawTokens", outputs: [], stateMutability: "nonpayable", type: "function" },
+        ],
+        "0x2EcCb53ca2d4ef91A79213FDDF3f8c2332c2a814"
+    );
 }
 
 // Contract to interact with for payment
@@ -409,8 +1539,6 @@ async function init() {
     console.log(accounts);
     selectedAccount = accounts[0];
 
-    document.getElementById("identifierInput").innerHTML = identifier;
-    document.getElementById("identifierTemp").style.display = "";
     document.getElementById("DivStep1").style.display = "none";
     document.getElementById("DivStep2").style.display = "";
     document.getElementById("validateDivOuter").style.display = "";
@@ -422,8 +1550,7 @@ async function init() {
 async function signUp() {
 
     try {
-        // identifier based on param in url
-        identifierInput = identifier;
+
         contractRegistry = await idriss.idrissRegistryContractPromise;
         let res;
         try {
@@ -434,14 +1561,14 @@ async function signUp() {
             console.log("User does not exist");
         }
         if (!res) {
-            const result = await IdrissCrypto[validateApiName].CreateOTP("Public ETH", identifierInput, selectedAccount);
+            const result = await IdrissCrypto[validateApiName].CreateOTP("Public ETH", identifier, selectedAccount);
             console.log(result.sessionKey);
 
             idHash = result.hash;
             sessionKey = result.sessionKey;
             document.getElementById("validateDiv").style.display = "";
 
-            if (identifierInput.match(regT)) {
+            if (identifier.match(regT)) {
                 twitterId = result.twitterId;
                 document.getElementById("accountName").innerHTML = identifier;
                 showTwitterVerification(result.twitterMsg);
@@ -515,7 +1642,7 @@ async function validate() {
                 // wallet shows very high gas if no funds are available
                 document.getElementById("spinnerText").innerHTML = "Confirming transaction 1 out of 2 ...";
                 document.getElementById("spinner").style.display = "";
-                await sleep(3000).then(() => {
+                await sleep(5000).then(() => {
                     console.log("sleeping done inside");
                 });
                 await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
@@ -584,7 +1711,7 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
         console.log(result);
         if (result && result.status) {
             document.getElementById("spinnerText").innerHTML = "Confirmed transaction 2 out of 2!";
-            await sleep(6000).then(() => {
+            await sleep(5000).then(() => {
                 console.log("Trigger success page");
                 document.getElementById("spinner").style.display = "none";
                 triggerSuccess();
