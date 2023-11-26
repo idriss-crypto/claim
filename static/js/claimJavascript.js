@@ -1,3 +1,6 @@
+const Web3Modal = window.Web3Modal.default;
+let provider = null;
+
 let identifier;
 let claimPassword;
 let assetId;
@@ -19,6 +22,8 @@ const ENV = "production";
 let validateApiName = ENV === "production" ? "Authorization" : "AuthorizationTestnet";
 let paymentsToClaim = [];
 let defaultWeb3Polygon;
+
+ZERO_ADDRESS = "0x0000000000000000000000000000000000000000"
 
 const walletType = {
     coin: "ETH",
@@ -275,8 +280,8 @@ switch (ENV) {
     case "production":
         loadPaymentMaticContractAddress = "0x066d3AE28E017Ac1E08FA857Ec68dfdC7de82a54";
         polygonChainId = 137;
-        rpcEndpoint = "https://rpc.ankr.com/polygon";
-        rpcEndpointPolygon = "https://rpc.ankr.com/polygon";
+        rpcEndpoint = "https://polygon-rpc.com/";
+        rpcEndpointPolygon = "https://polygon-rpc.com/";
         sendToAnyoneContractAddress = "0xf333EDE8D49dD100F02c946809C9F5D9867D10C0";
         idrissRegistryContractAddress = "0x2eccb53ca2d4ef91a79213fddf3f8c2332c2a814";
         priceOracleContractAddress = "0xAB594600376Ec9fD91F8e885dADF0CE036862dE0";
@@ -302,6 +307,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         identifier = params.get("identifier").replace(" ", "+");
         claimPassword = params.get("claimPassword");
         assetId = params.get("assetId") ?? 0;
+        if (assetId == 'null') assetId = 0;
         assetType = assetTypes[params.get("assetType")];
         assetAddress = params.get("assetAddress");
         token = params.get("token");
@@ -367,14 +373,14 @@ document.addEventListener("DOMContentLoaded", async () => {
                 const {toHash, assetType, assetContractAddress, amount, from, message} = events[i].returnValues;
                 // defaultWeb3.utils.fromWei(events[0].returnValues.amount)
                 // assetType is defined on page load
+                console.log("getting claim with ", toHash, assetType, assetContractAddress, assetId)
                 let claimable = await sendToAnyoneContract.methods.balanceOf(toHash, assetType, assetContractAddress, assetId).call();
                 console.log(claimable);
                 if (claimable > 0) {
-                    document.getElementById("DivStep0").style.display = "none";
-                    document.getElementById("DivStep1").style.display = "";
                     let claimMessageMain;
                     let claimMessageSubtitle = "Welcome to Crypto!";
                     if (message) claimMessageSubtitle = message;
+                    document.getElementById("tipMessageWrapper").style.display = message? "block": "none";
                     if (assetType == 0) {
                         dollarValue = await calculateDollar("polygon", assetContractAddress, claimable);
                         hideNFTPath();
@@ -412,6 +418,7 @@ document.addEventListener("DOMContentLoaded", async () => {
                         document.getElementById("openseaLinkDone").href = openseaLink;
                         document.getElementById("DivClaimNFT").style.display = "";
                     }
+
                     paymentsToClaim.push({
                         amount,
                         assetContractAddress,
@@ -419,13 +426,19 @@ document.addEventListener("DOMContentLoaded", async () => {
                         assetType,
                         toHash,
                     });
+
+                    document.getElementById("DivStep0").style.display = "none";
+                    document.getElementById("DivStep1").style.display = "";
+
                 } else {
                     document.getElementById("spinnerSearch").style.display = "none";
-                    document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
+                    document.getElementById("searchRes").innerHTML = "There are no assets to claim";
+                    document.getElementById("searchResCTA").style.display = "";
                 }
             } if (events.length == 0) {
                 document.getElementById("spinnerSearch").style.display = "none";
-                document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
+                document.getElementById("searchRes").innerHTML = "There are no assets to claim";
+                document.getElementById("searchResCTA").style.display = "";
             }
             console.log(events);
             console.log(paymentsToClaim);
@@ -433,7 +446,8 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch(e){
         console.log(e)
         document.getElementById("spinnerSearch").style.display = "none";
-        document.getElementById("searchRes").innerHTML = "Nothing to claim :(";
+        document.getElementById("searchRes").innerHTML = "There are no assets to claim";
+        document.getElementById("searchResCTA").style.display = "";
     }
 });
 
@@ -444,7 +458,320 @@ function translateImageSRC(_uri) {
 }
 
 async function loadERC1155Contract(web3_, contractAddress_) {
-    return await new web3_.eth.Contract( window.erc1155Abi, contractAddress_ );
+    return await new web3_.eth.Contract( [
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "ApprovalForAll",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256[]",
+				"name": "ids",
+				"type": "uint256[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256[]",
+				"name": "values",
+				"type": "uint256[]"
+			}
+		],
+		"name": "TransferBatch",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"indexed": true,
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256",
+				"name": "value",
+				"type": "uint256"
+			}
+		],
+		"name": "TransferSingle",
+		"type": "event"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "string",
+				"name": "value",
+				"type": "string"
+			},
+			{
+				"indexed": true,
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "URI",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "balanceOf",
+		"outputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address[]",
+				"name": "accounts",
+				"type": "address[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "ids",
+				"type": "uint256[]"
+			}
+		],
+		"name": "balanceOfBatch",
+		"outputs": [
+			{
+				"internalType": "uint256[]",
+				"name": "",
+				"type": "uint256[]"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "account",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			}
+		],
+		"name": "isApprovedForAll",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "ids",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "uint256[]",
+				"name": "amounts",
+				"type": "uint256[]"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeBatchTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "from",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "to",
+				"type": "address"
+			},
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "amount",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes",
+				"name": "data",
+				"type": "bytes"
+			}
+		],
+		"name": "safeTransferFrom",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "operator",
+				"type": "address"
+			},
+			{
+				"internalType": "bool",
+				"name": "approved",
+				"type": "bool"
+			}
+		],
+		"name": "setApprovalForAll",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "bytes4",
+				"name": "interfaceId",
+				"type": "bytes4"
+			}
+		],
+		"name": "supportsInterface",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "id",
+				"type": "uint256"
+			}
+		],
+		"name": "uri",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	}
+], contractAddress_ );
 }
 
 async function loadERC721Contract(web3_, contractAddress_) {
@@ -1635,11 +1962,72 @@ async function loadContract() {
 let contract;
 let GAS_LIMIT_PAY_NATIVE = 170000;
 
-async function init() {
-    web3 = new Web3(magic.rpcProvider);
-    // let people sign in or up
-    await web3.currentProvider.enable();
+function deviceType() {
+    const ua = navigator.userAgent;
+    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
+        return "tablet";
+    }
+    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
+        return "mobile";
+    }
+    return "desktop";
+}
 
+function hasInjected() {
+    if (typeof window.ethereum !== 'undefined') {
+        return true;
+      }
+      return false;
+}
+
+let magicLinkOpts = {
+    'custom-magicConnect': {
+        display: {
+            logo: "../static/images/magic.svg",
+            name: "Magic Connect",
+            description: "I don't have a wallet yet",
+        },
+        options: {
+            rpc: {
+                137: "https://polygon-rpc.com/",
+            },
+            chainId: 137,
+        },
+        package: true,
+        connector: async (_, options) => {
+            const { appName, networkUrl, chainId } = options;
+            const provider = new Web3(magic.rpcProvider);
+            await provider.currentProvider.enable();
+            console.log(provider)
+            return provider;
+        },
+    },
+};
+
+const providerOptionsNoWallet = {
+    ...magicLinkOpts,
+};
+
+const providerOptionsWallet = {
+};
+
+
+async function init() {
+
+    try {
+        await magic.wallet.disconnect()
+    } catch {
+        console.log("magic already disconnected")
+    }
+
+    let web3Modal = new Web3Modal({
+        cacheProvider: false, // optional
+        providerOptions: hasInjected()? providerOptionsWallet : providerOptionsNoWallet, // required
+        disableInjectedProvider: hasInjected()? false : true, // optional. For MetaMask / Brave / Opera.
+    });
+
+    provider = await web3Modal.connect();
+    web3 = await new Web3(provider);
     // get wallet address
     accounts = await web3.eth.getAccounts();
     console.log(accounts);
@@ -1667,6 +2055,7 @@ async function signUp() {
             console.log("User does not exist");
         }
         if (!res) {
+
             const result = await IdrissCrypto[validateApiName].CreateOTP("Public ETH", identifier, selectedAccount);
             console.log(result.sessionKey);
 
@@ -1683,6 +2072,7 @@ async function signUp() {
                 document.getElementById("OTP").style.display = "";
             }
         } else {
+
             document.getElementById("validateDivOuter").style.display = "none";
             // add check if connected wallet is owner of registered IDriss
             await claim(paymentsToClaim[0].amount, paymentsToClaim[0].assetType, paymentsToClaim[0].assetContractAddress, assetId);
@@ -1722,6 +2112,19 @@ async function validate() {
                 }
             }
             document.getElementById("validateDivOuter").style.display = "none";
+
+            chainId = await web3.eth.getChainId();
+            console.log(chainId);
+            if (chainId !== 137) {
+                // ToDo: add event listener for chain switch instead?
+                try {
+                    await provider.request({
+                            method: "wallet_switchEthereumChain",
+                            params: [{ chainId: "0x89" }],
+                        });
+                } catch (e) {console.log("network switch failed? ", e)}
+            }
+
             paymentContract = await loadPaymentMATIC(web3);
             // create receiptID for verification
             console.log(String(valid.receiptID));
@@ -1751,6 +2154,19 @@ async function validate() {
                 await sleep(5000).then(() => {
                     console.log("sleeping done inside");
                 });
+
+                chainId = await web3.eth.getChainId();
+                console.log(chainId);
+                if (chainId !== 137) {
+                    // ToDo: add event listener for chain switch instead?
+                    try {
+                        await provider.request({
+                                method: "wallet_switchEthereumChain",
+                                params: [{ chainId: "0x89" }],
+                            });
+                    } catch (e) {console.log("network switch failed? ", e)}
+                }
+
                 await paymentContract.methods.payNative(receipt_hash, idHash, "IDriss").send({
                     from: selectedAccount,
                     value: 0,
@@ -1795,22 +2211,30 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
             assetId,
         };
         console.log("inside claim");
-
-        await fetch("https://gasstation-mainnet.matic.network/v2")
-            .then((response) => response.json())
-            .then((json) => (gas = String(Math.round(json["fast"]["maxFee"] * 1_000_000_000))));
+        gas = await web3.eth.getGasPrice()
         console.log({ userHash, identifier, walletType, asset, gas });
         let result;
-        let isError = false;
         console.log("calling claim");
-        console.log(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS);
+        console.log(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? ZERO_ADDRESS);
+
+        const chainId = await web3.eth.getChainId();
+        console.log(chainId);
+        if (chainId !== 137) {
+            // ToDo: add event listener for chain switch instead?
+            try {
+                await provider.request({
+                        method: "wallet_switchEthereumChain",
+                        params: [{ chainId: "0x89" }],
+                    });
+            } catch (e) {console.log("network switch failed? ", e)}
+        }
+        gas = await web3.eth.getGasPrice()
         sendToAnyoneContract = await loadSendToAnyoneContract(web3);
         // claim contract call directly?
         result = await sendToAnyoneContract.methods.claim(userHashForClaim, claimPassword, asset.type.valueOf(), asset.assetContractAddress ?? this.ZERO_ADDRESS).send({
             from: selectedAccount,
             gasPrice: gas,
             gas: 250000,
-            //TODO: check on this, should work automatically
             nonce: await web3.eth.getTransactionCount(selectedAccount),
         });
 
@@ -1822,7 +2246,7 @@ async function claim(amount, assetType, assetContractAddress, assetId = 0) {
                 document.getElementById("spinner").style.display = "none";
                 triggerSuccess();
             });
-        } else if (!isError) {
+        } else  {
             triggerError(result);
         }
     } catch (e) {
@@ -1876,7 +2300,6 @@ async function copyTweet() {
 function hideNFTPath() {
     document.getElementById("DivStep2").style.display = "none";
     document.getElementById("DivStep3").style.display = "none";
-    document.getElementById("DivStep1").style.display = "";
     document.getElementById("DivClaimToken").style.display = "";
     document.getElementById("DivClaimNFT").style.display = "none";
 }
@@ -1912,37 +2335,3 @@ async function triggerDiscord() {
 function triggerRetry() {
     location.reload();
 }
-
-// to delete an IDriss:
-// to delete an IDriss:
-//async function loadRegistryContract(web3_) {
-//    return await new web3_.eth.Contract(
-//        [{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"AdminAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"admin","type":"address"}],"name":"AdminDeleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Decrement","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"string","name":"hash","type":"string"}],"name":"IDrissAdded","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"string","name":"hash","type":"string"}],"name":"IDrissDeleted","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousIDrissOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newIDrissOwner","type":"address"}],"name":"IDrissOwnershipTransferred","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"value","type":"uint256"}],"name":"Increment","type":"event"},{"anonymous":false,"inputs":[{"indexed":false,"internalType":"uint256","name":"price","type":"uint256"}],"name":"NewPrice","type":"event"},{"anonymous":false,"inputs":[{"indexed":true,"internalType":"address","name":"previousOwner","type":"address"},{"indexed":true,"internalType":"address","name":"newOwner","type":"address"}],"name":"OwnershipTransferred","type":"event"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"IDrissOwners","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"adminAddress","type":"address"}],"name":"addAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"hashPub","type":"string"},{"internalType":"string","name":"hashID","type":"string"},{"internalType":"string","name":"address_","type":"string"},{"internalType":"address","name":"ownerAddress","type":"address"}],"name":"addIDriss","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"string","name":"hashPub","type":"string"},{"internalType":"string","name":"hashID","type":"string"},{"internalType":"string","name":"address_","type":"string"},{"internalType":"address","name":"token","type":"address"},{"internalType":"uint256","name":"amount","type":"uint256"},{"internalType":"address","name":"ownerAddress","type":"address"}],"name":"addIDrissToken","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"contractOwner","outputs":[{"internalType":"address","name":"","type":"address"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"countAdding","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"countDeleting","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"creationTime","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"address","name":"adminAddress","type":"address"}],"name":"deleteAdmin","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"string","name":"hashPub","type":"string"}],"name":"deleteIDriss","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"string","name":"hashPub","type":"string"}],"name":"getIDriss","outputs":[{"internalType":"string","name":"","type":"string"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"string","name":"","type":"string"}],"name":"payDates","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[],"name":"price","outputs":[{"internalType":"uint256","name":"","type":"uint256"}],"stateMutability":"view","type":"function"},{"inputs":[{"internalType":"uint256","name":"newPrice","type":"uint256"}],"name":"setPrice","outputs":[],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferContractOwnership","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[{"internalType":"string","name":"hashPub","type":"string"},{"internalType":"address","name":"newOwner","type":"address"}],"name":"transferIDrissOwnership","outputs":[],"stateMutability":"payable","type":"function"},{"inputs":[],"name":"withdraw","outputs":[{"internalType":"bytes","name":"","type":"bytes"}],"stateMutability":"nonpayable","type":"function"},{"inputs":[{"internalType":"address","name":"tokenContract","type":"address"}],"name":"withdrawTokens","outputs":[],"stateMutability":"nonpayable","type":"function"}],
-//        "0x6489a077e9d1382e87a493985c531bee2d484640"
-//    );
-//}
-// contract = await loadRegistryContract(web3);
-// await contract.methods.deleteIDriss("8470384becc8ef6761ff3deed7583ec772bdae442f1a552be5b0795dd03282f7").send({ from: selectedAccount, value: 0});
-
-// to send 0 value transaction for cancelling stuck transactin on fortmatic:
-
-//const toAddress = '0x4a3755eB99ae8b22AaFB8f16F0C51CF68Eb60b85';
-//const sendValue = web3.utils.toWei(String(1.2), 'ether');
-//
-//web3.eth.getAccounts((error, accounts) => {
-//  if (error) throw error;
-//
-//  // Construct Ether transaction params
-//  const txnParams = {
-//    from: accounts[0],
-//    to: toAddress,
-//    value: sendValue,
-//      gasPrice: web3.utils.toWei('0.00000005', 'ether')
-//  }
-//
-//  // Send Ether transaction with web3
-//  web3.eth.sendTransaction(txnParams, (error, txnHash) => {
-//    if (error) throw error;
-//    console.log(txnHash);
-//  });
-//});

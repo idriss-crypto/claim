@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html>
     <head>
+        <title>IDriss Claim</title>
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="description" content="Claim the assets waiting for you">
         <script src="https://cdn.tailwindcss.com"></script>
-        <title>IDriss Claim</title>
         <link rel="apple-touch-icon" sizes="180x180" href="../static/images/apple-touch-icon.png" />
         <link rel="shortcut icon" type="image/png" href="../static/images/favicon32.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="../static/images/favicon32.png" />
@@ -60,6 +61,7 @@
             <div id="DivStep0" class="max-w-md w-full space-y-8">
                 <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                 <h2 class="mt-6 text-center text-3xl font-extrabold text-gray-900" id="searchRes">Searching for claimable assets...</h2>
+                <p id="searchResCTA" style="display: none;" class="text-center text-sm text-gray-500">Try a different link</p>
                 <div id="spinnerSearch">
                     <svg class="m-auto mt-2 w-24 h-24 text-gray-200 animate-spin dark:text-gray-600 fill-[#11dd74]" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
                         <path
@@ -80,7 +82,7 @@
                 <div id="DivClaimToken" style="display: none;">
                     <a href="/"><img class="mx-auto h-12 w-auto" src="../static/images/IDriss_Logo.svg" alt="" /></a>
                     <h2 id="welcomeMessageToken" class="mt-6 text-center text-3xl font-extrabold text-gray-900">You Have Received $50 in ETH</h2>
-                    <h3 class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span id="tipMessageToken" class="italic">Enjoy your crypto adventure Dad! Tim.</span></h3>
+                    <h3 id="tipMessageWrapper" class="mt-4 text-base font-regular text-gray-700 px-4 sm:py-2 sm:px-6 lg:px-8 text-center">📩 <span id="tipMessageToken" class="italic">Enjoy your crypto adventure Dad! Tim.</span></h3>
 
                     <!-- CLAIM BUTTON -->
                     <div class="mt-2 space-y-6 text-center" style="display: ;">
@@ -249,18 +251,19 @@
 
         <!-- FOOTER -->
 
-        <div class="relative bg-white inset-x-0 bottom-0 lg:fixed md:fixed">
-            <div class="max-w-7xl mx-auto px-4 sm:px-6">
-                <div class="items-center border-b-2 border-gray-100 py-6 md:space-x-10">
-                    <nav class="flex space-x-10 justify-center">
-                        <a href="/" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Home</a>
-                        <a href="/docs" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Docs</a>
-                        <a href="https://twitter.com/IDriss_xyz" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Twitter</a>
-                        <a href="https://discord.gg/RJhJKamjw5" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Discord</a>
-                    </nav>
-                </div>
-            </div>
-        </div>
+<div class="bg-white inset-x-0 bottom-0 fixed">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6">
+    <div class="items-center border-b-2 border-gray-100 py-6 md:space-x-10 flex justify-center">
+      <nav class="flex space-x-10">
+        <a href="/" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Home</a>
+        <a href="/docs" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Docs</a>
+        <a href="https://twitter.com/IDriss_xyz" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Twitter</a>
+        <a href="https://discord.gg/RJhJKamjw5" target="_blank" class="text-base font-medium text-gray-500 hover:text-gray-900" rel="noopener noreferrer">Discord</a>
+      </nav>
+    </div>
+  </div>
+</div>
+
 
 <!--        ToDo: delete script -->
         <script>
@@ -362,7 +365,6 @@
         <script src="https://cdn.jsdelivr.net/npm/@web3auth/openlogin-adapter@1.1.1/dist/openloginAdapter.umd.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/web3@1.7.3/dist/web3.min.js"></script>
         <script type="text/javascript" src="https://unpkg.com/evm-chains@0.2.0/dist/umd/index.min.js"></script>
-        <script type="text/javascript" src="https://unpkg.com/@walletconnect/web3-provider@1.7.0/dist/umd/index.min.js"></script>
         <script type="text/javascript" src="../static/js/web3modal.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/magic-sdk/dist/magic.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/@magic-ext/connect/dist/extension.js"></script>
