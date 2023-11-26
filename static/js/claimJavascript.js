@@ -1852,16 +1852,52 @@ async function digestMessage(message) {
 
 //NAV BAR
 //Connecting wallet
-
-const customNodePolygon = {
-    rpcUrl: rpcEndpoint,
-    chainId: polygonChainId,
+function isTallyInstalled() {
+    let providers = window.ethereum.providers;
+    let pTally;
+    if (providers) {
+        pTally = providers.find((p) => p.isTally);
+    }
+    if (pTally) {
+        return true;
+    } else {
+        return false;
+    }
+}
+let TallyOpts = {
+    "custom-tally": {
+        display: {
+            logo: "../static/images/tally.svg",
+            name: "Taho",
+            description: "Connect to your Taho Wallet",
+        },
+        package: true,
+        connector: async () => {
+            if (!isTallyInstalled()) {
+                window.open("https://taho.xyz/", "_blank"); // <-- LOOK HERE
+                return;
+            }
+            let provider = null;
+            if (typeof window.ethereum !== "undefined") {
+                let providers = window.ethereum.providers;
+                if (providers) {
+                    provider = providers.find((p) => p.isTally);
+                } else {
+                    provider = window.ethereum;
+                }
+                try {
+                    await provider.request({ method: "eth_requestAccounts" });
+                } catch (error) {
+                    throw new Error("User Rejected");
+                }
+            } else {
+                throw new Error("No Taho Wallet found");
+            }
+            console.log("Tally provider", provider);
+            return provider;
+        },
+    },
 };
-
-const magic = new Magic("pk_live_75AE254AAEBDCF4B", {
-    extensions: [new MagicConnectExtension()],
-    network: customNodePolygon,
-});
 
 // web3 for chosen wallet
 let web3;
@@ -1962,16 +1998,6 @@ async function loadContract() {
 let contract;
 let GAS_LIMIT_PAY_NATIVE = 170000;
 
-function deviceType() {
-    const ua = navigator.userAgent;
-    if (/(tablet|ipad|playbook|silk)|(android(?!.*mobi))/i.test(ua)) {
-        return "tablet";
-    }
-    if (/Mobile|iP(hone|od)|Android|BlackBerry|IEMobile|Kindle|Silk-Accelerated|(hpw|web)OS|Opera M(obi|ini)/.test(ua)) {
-        return "mobile";
-    }
-    return "desktop";
-}
 
 function hasInjected() {
     if (typeof window.ethereum !== 'undefined') {
@@ -1980,32 +2006,8 @@ function hasInjected() {
       return false;
 }
 
-let magicLinkOpts = {
-    'custom-magicConnect': {
-        display: {
-            logo: "../static/images/magic.svg",
-            name: "Magic Connect",
-            description: "I don't have a wallet yet",
-        },
-        options: {
-            rpc: {
-                137: "https://polygon-rpc.com/",
-            },
-            chainId: 137,
-        },
-        package: true,
-        connector: async (_, options) => {
-            const { appName, networkUrl, chainId } = options;
-            const provider = new Web3(magic.rpcProvider);
-            await provider.currentProvider.enable();
-            console.log(provider)
-            return provider;
-        },
-    },
-};
-
 const providerOptionsNoWallet = {
-    ...magicLinkOpts,
+    ...TallyOpts,
 };
 
 const providerOptionsWallet = {
@@ -2014,16 +2016,10 @@ const providerOptionsWallet = {
 
 async function init() {
 
-    try {
-        await magic.wallet.disconnect()
-    } catch {
-        console.log("magic already disconnected")
-    }
-
     let web3Modal = new Web3Modal({
         cacheProvider: false, // optional
-        providerOptions: hasInjected()? providerOptionsWallet : providerOptionsNoWallet, // required
-        disableInjectedProvider: hasInjected()? false : true, // optional. For MetaMask / Brave / Opera.
+        providerOptions: hasInjected()? providerOptionsWallet : providerOptionsNoWallet,
+        disableInjectedProvider: hasInjected()? false : true,
     });
 
     provider = await web3Modal.connect();
