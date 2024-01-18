@@ -2041,11 +2041,10 @@ async function signUp() {
 
     try {
 
-        contractRegistry = await idriss.idrissRegistryContractPromise;
         let res;
         try {
             console.log(userHashForClaim);
-            res = await contractRegistry.methods.getIDriss(userHashForClaim).call();
+            res = await idriss.getIDriss(userHashForClaim);
             console.log(res);
         } catch {
             console.log("User does not exist");
